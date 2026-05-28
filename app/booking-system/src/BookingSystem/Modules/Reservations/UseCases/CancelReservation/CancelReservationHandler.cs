@@ -1,4 +1,5 @@
 using BookingSystem.BuildingBlocks.Application;
+using BookingSystem.BuildingBlocks.Domain;
 using BookingSystem.Modules.Reservations.Domain;
 using BookingSystem.Modules.Reservations.UseCases.Abstractions;
 
@@ -7,12 +8,21 @@ namespace BookingSystem.Modules.Reservations.UseCases.CancelReservation;
 internal sealed class CancelReservationHandler(
     IReservationRepository repository) : ICommandHandler<CancelReservationCommand>
 {
-    public async Task Handle(CancelReservationCommand command, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CancelReservationCommand command, CancellationToken cancellationToken)
     {
-        var reservation = await repository.GetById(ReservationId.From(command.ReservationId), cancellationToken)
-            ?? throw new KeyNotFoundException($"Reservation {command.ReservationId} not found.");
+        var reservation = await repository.GetById(ReservationId.From(command.ReservationId), cancellationToken);
+        if (reservation is null)
+            return new NotFoundError($"Reservation {command.ReservationId} not found.");
 
-        reservation.Cancel();
-        await repository.Update(reservation, cancellationToken);
+        try
+        {
+            reservation.Cancel();
+            await repository.Update(reservation, cancellationToken);
+            return Result.Success();
+        }
+        catch (DomainException ex)
+        {
+            return new ConflictError(ex.Message);
+        }
     }
 }

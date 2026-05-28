@@ -12,24 +12,9 @@ internal static class ChangeReservationPeriodEndpoint
             ChangeReservationPeriodHandler handler,
             CancellationToken cancellationToken) =>
         {
-            try
-            {
-                var command = new ChangeReservationPeriodCommand(reservationId, request.Start, request.End);
-                await handler.Handle(command, cancellationToken);
-                return Results.NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return ProblemDetailsExtensions.ValidationProblem(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return ProblemDetailsExtensions.NotFoundProblem(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return ProblemDetailsExtensions.ConflictProblem(ex.Message);
-            }
+            var command = new ChangeReservationPeriodCommand(reservationId, request.Start, request.End);
+            var result = await handler.Handle(command, cancellationToken);
+            return result.ToHttpResult();
         });
 
         return group;

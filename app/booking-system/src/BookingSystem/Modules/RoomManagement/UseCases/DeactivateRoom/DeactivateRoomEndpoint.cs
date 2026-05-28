@@ -11,16 +11,9 @@ internal static class DeactivateRoomEndpoint
             DeactivateRoomHandler handler,
             CancellationToken cancellationToken) =>
         {
-            try
-            {
-                var command = new DeactivateRoomCommand(roomId);
-                await handler.Handle(command, cancellationToken);
-                return Results.NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return ProblemDetailsExtensions.NotFoundProblem(ex.Message);
-            }
+            var command = new DeactivateRoomCommand(roomId);
+            var result = await handler.Handle(command, cancellationToken);
+            return result.ToHttpResult();
         });
 
         return group;

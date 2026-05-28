@@ -1,4 +1,5 @@
 using BookingSystem.BuildingBlocks.Api;
+using BookingSystem.BuildingBlocks.Domain;
 
 namespace BookingSystem.Modules.Reservations.UseCases.GetReservation;
 
@@ -14,7 +15,7 @@ internal static class GetReservationEndpoint
             var query = new GetReservationQuery(reservationId);
             var response = await handler.Handle(query, cancellationToken);
             return response is null
-                ? ProblemDetailsExtensions.NotFoundProblem($"Reservation {reservationId} not found.")
+                ? new NotFoundError($"Reservation {reservationId} not found.").ToHttpResult()
                 : Results.Ok(response);
         });
 

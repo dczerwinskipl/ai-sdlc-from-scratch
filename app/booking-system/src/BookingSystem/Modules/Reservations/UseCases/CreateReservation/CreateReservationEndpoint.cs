@@ -11,28 +11,9 @@ internal static class CreateReservationEndpoint
             CreateReservationHandler handler,
             CancellationToken cancellationToken) =>
         {
-            try
-            {
-                var command = new CreateReservationCommand(
-                    request.RoomId,
-                    request.GuestName,
-                    request.Start,
-                    request.End);
-                var response = await handler.Handle(command, cancellationToken);
-                return Results.Created($"/api/reservations/{response.ReservationId}", response);
-            }
-            catch (ArgumentException ex)
-            {
-                return ProblemDetailsExtensions.ValidationProblem(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return ProblemDetailsExtensions.NotFoundProblem(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return ProblemDetailsExtensions.ConflictProblem(ex.Message);
-            }
+            var command = new CreateReservationCommand(request.RoomId, request.GuestName, request.Start, request.End);
+            var result = await handler.Handle(command, cancellationToken);
+            return result.ToHttpResult(r => Results.Created($"/api/reservations/{r.ReservationId}", r));
         });
 
         return group;

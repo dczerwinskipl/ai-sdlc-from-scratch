@@ -11,20 +11,9 @@ internal static class ConfirmReservationEndpoint
             ConfirmReservationHandler handler,
             CancellationToken cancellationToken) =>
         {
-            try
-            {
-                var command = new ConfirmReservationCommand(reservationId);
-                await handler.Handle(command, cancellationToken);
-                return Results.NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return ProblemDetailsExtensions.NotFoundProblem(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return ProblemDetailsExtensions.ConflictProblem(ex.Message);
-            }
+            var command = new ConfirmReservationCommand(reservationId);
+            var result = await handler.Handle(command, cancellationToken);
+            return result.ToHttpResult();
         });
 
         return group;

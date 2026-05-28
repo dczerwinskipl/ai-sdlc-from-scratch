@@ -1,4 +1,5 @@
 using BookingSystem.BuildingBlocks.Api;
+using BookingSystem.BuildingBlocks.Domain;
 
 namespace BookingSystem.Modules.RoomManagement.UseCases.GetRoom;
 
@@ -14,7 +15,7 @@ internal static class GetRoomEndpoint
             var query = new GetRoomQuery(roomId);
             var response = await handler.Handle(query, cancellationToken);
             return response is null
-                ? ProblemDetailsExtensions.NotFoundProblem($"Room {roomId} not found.")
+                ? new NotFoundError($"Room {roomId} not found.").ToHttpResult()
                 : Results.Ok(response);
         });
 
