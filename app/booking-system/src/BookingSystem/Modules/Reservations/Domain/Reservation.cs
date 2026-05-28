@@ -31,25 +31,28 @@ internal sealed class Reservation : AggregateRoot<ReservationId>
         return reservation;
     }
 
-    public void Confirm()
+    public Result Confirm()
     {
         if (Status != ReservationStatus.Pending)
-            throw new DomainException("Only pending reservations can be confirmed.");
+            return new DomainError("Only pending reservations can be confirmed.");
         Status = ReservationStatus.Confirmed;
+        return Result.Success();
     }
 
-    public void Cancel()
+    public Result Cancel()
     {
         if (Status == ReservationStatus.Cancelled)
-            throw new DomainException("Reservation is already cancelled.");
+            return new DomainError("Reservation is already cancelled.");
         Status = ReservationStatus.Cancelled;
+        return Result.Success();
     }
 
-    public void ChangePeriod(ReservationPeriod newPeriod)
+    public Result ChangePeriod(ReservationPeriod newPeriod)
     {
         if (Status == ReservationStatus.Cancelled)
-            throw new DomainException("Cannot change period of a cancelled reservation.");
+            return new DomainError("Cannot change period of a cancelled reservation.");
         Period = newPeriod;
+        return Result.Success();
     }
 
     public bool IsActive() => Status != ReservationStatus.Cancelled;

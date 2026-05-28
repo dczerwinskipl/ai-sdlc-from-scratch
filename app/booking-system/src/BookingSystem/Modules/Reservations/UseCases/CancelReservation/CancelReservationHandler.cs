@@ -14,15 +14,10 @@ internal sealed class CancelReservationHandler(
         if (reservation is null)
             return new NotFoundError($"Reservation {command.ReservationId} not found.");
 
-        try
-        {
-            reservation.Cancel();
-            await repository.Update(reservation, cancellationToken);
-            return Result.Success();
-        }
-        catch (DomainException ex)
-        {
-            return new ConflictError(ex.Message);
-        }
+        var result = reservation.Cancel();
+        if (result.IsFailure) return result;
+
+        await repository.Update(reservation, cancellationToken);
+        return Result.Success();
     }
 }

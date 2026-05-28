@@ -19,16 +19,9 @@ internal sealed class EditRoomHandler(
         if (room is null)
             return new NotFoundError($"Room {command.RoomId} not found.");
 
-        try
-        {
-            room.Rename(RoomName.Create(command.Name));
-            room.ChangeCapacity(RoomCapacity.Create(command.Capacity));
-            await repository.Update(room, cancellationToken);
-            return new EditRoomResponse(room.Id.Value);
-        }
-        catch (DomainException ex)
-        {
-            return new ConflictError(ex.Message);
-        }
+        room.Rename(RoomName.Create(command.Name));
+        room.ChangeCapacity(RoomCapacity.Create(command.Capacity));
+        await repository.Update(room, cancellationToken);
+        return new EditRoomResponse(room.Id.Value);
     }
 }

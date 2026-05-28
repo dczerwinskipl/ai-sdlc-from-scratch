@@ -14,15 +14,10 @@ internal sealed class ConfirmReservationHandler(
         if (reservation is null)
             return new NotFoundError($"Reservation {command.ReservationId} not found.");
 
-        try
-        {
-            reservation.Confirm();
-            await repository.Update(reservation, cancellationToken);
-            return Result.Success();
-        }
-        catch (DomainException ex)
-        {
-            return new ConflictError(ex.Message);
-        }
+        var result = reservation.Confirm();
+        if (result.IsFailure) return result;
+
+        await repository.Update(reservation, cancellationToken);
+        return Result.Success();
     }
 }

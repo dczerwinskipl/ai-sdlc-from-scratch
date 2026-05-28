@@ -26,27 +26,20 @@ internal sealed class CreateReservationHandler(
         if (!room.IsActive)
             return new ConflictError("Room is not available for reservations.");
 
-        try
-        {
-            var roomId = ReservableRoomId.From(command.RoomId);
-            var period = ReservationPeriod.Create(command.Start, command.End);
-            var available = await availabilityChecker.IsAvailable(roomId, period, null, cancellationToken);
-            if (!available)
-                return new ConflictError("The selected period overlaps with an existing reservation.");
+        var roomId = ReservableRoomId.From(command.RoomId);
+        var period = ReservationPeriod.Create(command.Start, command.End);
+        var available = await availabilityChecker.IsAvailable(roomId, period, null, cancellationToken);
+        if (!available)
+            return new ConflictError("The selected period overlaps with an existing reservation.");
 
-            var reservation = Reservation.Create(
-                ReservationId.New(),
-                roomId,
-                ReservationGuest.Create(command.GuestName),
-                period,
-                clock.UtcNow);
+        var reservation = Reservation.Create(
+            ReservationId.New(),
+            roomId,
+            ReservationGuest.Create(command.GuestName),
+            period,
+            clock.UtcNow);
 
-            await repository.Add(reservation, cancellationToken);
-            return new CreateReservationResponse(reservation.Id.Value);
-        }
-        catch (DomainException ex)
-        {
-            return new ConflictError(ex.Message);
-        }
+        await repository.Add(reservation, cancellationToken);
+        return new CreateReservationResponse(reservation.Id.Value);
     }
 }

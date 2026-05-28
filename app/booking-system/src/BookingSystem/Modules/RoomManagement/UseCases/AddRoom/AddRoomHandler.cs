@@ -15,19 +15,12 @@ internal sealed class AddRoomHandler(
         if (error is not null)
             return new ValidationError(error);
 
-        try
-        {
-            var room = Room.Create(
-                RoomId.New(),
-                RoomName.Create(command.Name),
-                RoomCapacity.Create(command.Capacity));
+        var room = Room.Create(
+            RoomId.New(),
+            RoomName.Create(command.Name),
+            RoomCapacity.Create(command.Capacity));
 
-            await repository.Add(room, cancellationToken);
-            return new AddRoomResponse(room.Id.Value);
-        }
-        catch (DomainException ex)
-        {
-            return new ConflictError(ex.Message);
-        }
+        await repository.Add(room, cancellationToken);
+        return new AddRoomResponse(room.Id.Value);
     }
 }

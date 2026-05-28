@@ -21,22 +21,17 @@ internal sealed class ChangeReservationPeriodHandler(
         if (reservation is null)
             return new NotFoundError($"Reservation {command.ReservationId} not found.");
 
-        try
-        {
-            var newPeriod = ReservationPeriod.Create(command.Start, command.End);
-            var available = await availabilityChecker.IsAvailable(
-                reservation.RoomId, newPeriod, reservationId, cancellationToken);
+        var newPeriod = ReservationPeriod.Create(command.Start, command.End);
+        var available = await availabilityChecker.IsAvailable(
+            reservation.RoomId, newPeriod, reservationId, cancellationToken);
 
-            if (!available)
-                return new ConflictError("The selected period overlaps with an existing reservation.");
+        if (!available)
+            return new ConflictError("The selected period overlaps with an existing reservation.");
 
-            reservation.ChangePeriod(newPeriod);
-            await repository.Update(reservation, cancellationToken);
-            return Result.Success();
-        }
-        catch (DomainException ex)
-        {
-            return new ConflictError(ex.Message);
-        }
+        var result = reservation.ChangePeriod(newPeriod);
+        if (result.IsFailure) return result;
+
+        await repository.Update(reservation, cancellationToken);
+        return Result.Success();
     }
 }

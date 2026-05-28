@@ -19,6 +19,7 @@ internal static class ResultExtensions
         ValidationError e => Results.Problem(e.Message, statusCode: StatusCodes.Status400BadRequest),
         NotFoundError e   => Results.Problem(e.Message, statusCode: StatusCodes.Status404NotFound),
         ConflictError e   => Results.Problem(e.Message, statusCode: StatusCodes.Status409Conflict),
+        DomainError e     => Results.Problem(e.Message, statusCode: StatusCodes.Status409Conflict),
         _                 => Results.Problem(statusCode: StatusCodes.Status500InternalServerError)
     };
 }
