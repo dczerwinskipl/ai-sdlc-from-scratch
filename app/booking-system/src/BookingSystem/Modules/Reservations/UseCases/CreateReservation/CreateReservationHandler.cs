@@ -1,6 +1,5 @@
 using BookingSystem.BuildingBlocks.Application;
 using BookingSystem.BuildingBlocks.Domain;
-using BookingSystem.Modules.RoomManagement.Domain;
 using BookingSystem.Modules.RoomManagement.PublicContracts;
 using BookingSystem.Modules.Reservations.Domain;
 using BookingSystem.Modules.Reservations.UseCases.Abstractions;
@@ -20,8 +19,7 @@ internal sealed class CreateReservationHandler(
         if (validationError is not null)
             return new ValidationError(validationError);
 
-        var roomId = RoomId.From(command.RoomId);
-        var room = await roomReader.GetById(roomId, cancellationToken);
+        var room = await roomReader.GetById(command.RoomId, cancellationToken);
         if (room is null)
             return new NotFoundError($"Room {command.RoomId} not found.");
 
@@ -30,6 +28,7 @@ internal sealed class CreateReservationHandler(
 
         try
         {
+            var roomId = ReservableRoomId.From(command.RoomId);
             var period = ReservationPeriod.Create(command.Start, command.End);
             var available = await availabilityChecker.IsAvailable(roomId, period, null, cancellationToken);
             if (!available)

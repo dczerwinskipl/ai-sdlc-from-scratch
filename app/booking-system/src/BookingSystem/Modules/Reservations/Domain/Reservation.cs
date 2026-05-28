@@ -1,11 +1,10 @@
 using BookingSystem.BuildingBlocks.Domain;
-using BookingSystem.Modules.RoomManagement.Domain;
 
 namespace BookingSystem.Modules.Reservations.Domain;
 
 internal sealed class Reservation : AggregateRoot<ReservationId>
 {
-    public RoomId RoomId { get; private set; } = null!;
+    public ReservableRoomId RoomId { get; private set; } = null!;
     public ReservationGuest Guest { get; private set; } = null!;
     public ReservationPeriod Period { get; private set; } = null!;
     public ReservationStatus Status { get; private set; }
@@ -15,7 +14,7 @@ internal sealed class Reservation : AggregateRoot<ReservationId>
 
     public static Reservation Create(
         ReservationId id,
-        RoomId roomId,
+        ReservableRoomId roomId,
         ReservationGuest guest,
         ReservationPeriod period,
         DateTimeOffset createdAt)

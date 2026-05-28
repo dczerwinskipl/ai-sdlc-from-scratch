@@ -1,4 +1,3 @@
-using BookingSystem.Modules.RoomManagement.Domain;
 using BookingSystem.Modules.Reservations.Domain;
 using BookingSystem.Modules.Reservations.UseCases.Abstractions;
 
@@ -8,7 +7,7 @@ internal sealed class InMemoryReservationAvailabilityChecker(
     InMemoryReservationStore store) : IReservationAvailabilityChecker
 {
     public Task<bool> IsAvailable(
-        RoomId roomId,
+        ReservableRoomId roomId,
         ReservationPeriod period,
         ReservationId? excludeReservationId,
         CancellationToken cancellationToken)
