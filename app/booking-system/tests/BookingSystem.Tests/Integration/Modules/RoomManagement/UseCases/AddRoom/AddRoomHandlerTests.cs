@@ -1,9 +1,9 @@
 using BookingSystem.BuildingBlocks.Domain;
+using BookingSystem.Modules.RoomManagement.Domain;
 using BookingSystem.Modules.RoomManagement.Infrastructure;
 using BookingSystem.Modules.RoomManagement.UseCases.AddRoom;
-using BookingSystem.Tests.Builders;
 
-namespace BookingSystem.Tests.Integration.RoomManagement;
+namespace BookingSystem.Tests.Integration.Modules.RoomManagement.UseCases.AddRoom;
 
 public sealed class AddRoomHandlerTests
 {
@@ -18,7 +18,7 @@ public sealed class AddRoomHandlerTests
     }
 
     [Fact]
-    public async Task Creates_room_and_returns_id()
+    public async Task Handle_WhenCommandIsValid_ShouldCreateRoomAndReturnId()
     {
         // Arrange
         var command = new AddRoomCommand("Conference Room A", 10);
@@ -32,7 +32,7 @@ public sealed class AddRoomHandlerTests
     }
 
     [Fact]
-    public async Task Created_room_is_persisted_in_store()
+    public async Task Handle_WhenRoomIsCreated_ShouldBeActive()
     {
         // Arrange
         var command = new AddRoomCommand("Conference Room A", 10);
@@ -41,9 +41,8 @@ public sealed class AddRoomHandlerTests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        var stored = _store.Execute(rooms => rooms.FirstOrDefault(r => r.Id.Value == result.Value!.RoomId));
-        stored.Should().NotBeNull();
-        stored!.Status.Should().Be(BookingSystem.Modules.RoomManagement.Domain.RoomStatus.Active);
+        var stored = _store.Execute(rooms => rooms.Single(r => r.Id.Value == result.Value!.RoomId));
+        stored.Status.Should().Be(RoomStatus.Active);
     }
 
     [Theory]
@@ -51,7 +50,7 @@ public sealed class AddRoomHandlerTests
     [InlineData("  ", 10)]
     [InlineData("Room", 0)]
     [InlineData("Room", -5)]
-    public async Task Returns_validation_error_for_invalid_input(string name, int capacity)
+    public async Task Handle_WhenInputIsInvalid_ShouldReturnValidationError(string name, int capacity)
     {
         // Arrange
         var command = new AddRoomCommand(name, capacity);

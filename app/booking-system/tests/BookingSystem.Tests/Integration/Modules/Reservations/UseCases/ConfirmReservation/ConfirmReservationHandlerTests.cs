@@ -4,7 +4,7 @@ using BookingSystem.Modules.Reservations.Infrastructure;
 using BookingSystem.Modules.Reservations.UseCases.ConfirmReservation;
 using BookingSystem.Tests.Builders;
 
-namespace BookingSystem.Tests.Integration.Reservations;
+namespace BookingSystem.Tests.Integration.Modules.Reservations.UseCases.ConfirmReservation;
 
 public sealed class ConfirmReservationHandlerTests
 {
@@ -17,28 +17,25 @@ public sealed class ConfirmReservationHandlerTests
     }
 
     [Fact]
-    public async Task Confirms_pending_reservation()
+    public async Task Handle_WhenReservationIsPending_ShouldConfirm()
     {
         // Arrange
-        var reservationId = ReservationBuilder.Pending().SeedInStore(_store);
+        var reservation = ReservationBuilder.Pending().Build();
+        _store.Execute(r => r.Add(reservation));
 
         // Act
-        var result = await _sut.Handle(new ConfirmReservationCommand(reservationId), CancellationToken.None);
+        var result = await _sut.Handle(new ConfirmReservationCommand(reservation.Id.Value), CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var reservation = _store.Execute(r => r.Single(x => x.Id.Value == reservationId));
         reservation.Status.Should().Be(ReservationStatus.Confirmed);
     }
 
     [Fact]
-    public async Task Returns_not_found_when_reservation_does_not_exist()
+    public async Task Handle_WhenReservationDoesNotExist_ShouldReturnNotFoundError()
     {
-        // Arrange
-        var command = new ConfirmReservationCommand(Guid.NewGuid());
-
         // Act
-        var result = await _sut.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(new ConfirmReservationCommand(Guid.NewGuid()), CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -46,13 +43,14 @@ public sealed class ConfirmReservationHandlerTests
     }
 
     [Fact]
-    public async Task Returns_domain_error_when_reservation_is_already_confirmed()
+    public async Task Handle_WhenAlreadyConfirmed_ShouldReturnDomainError()
     {
         // Arrange
-        var reservationId = ReservationBuilder.Confirmed().SeedInStore(_store);
+        var reservation = ReservationBuilder.Confirmed().Build();
+        _store.Execute(r => r.Add(reservation));
 
         // Act
-        var result = await _sut.Handle(new ConfirmReservationCommand(reservationId), CancellationToken.None);
+        var result = await _sut.Handle(new ConfirmReservationCommand(reservation.Id.Value), CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -60,13 +58,14 @@ public sealed class ConfirmReservationHandlerTests
     }
 
     [Fact]
-    public async Task Returns_domain_error_when_reservation_is_cancelled()
+    public async Task Handle_WhenCancelled_ShouldReturnDomainError()
     {
         // Arrange
-        var reservationId = ReservationBuilder.Cancelled().SeedInStore(_store);
+        var reservation = ReservationBuilder.Cancelled().Build();
+        _store.Execute(r => r.Add(reservation));
 
         // Act
-        var result = await _sut.Handle(new ConfirmReservationCommand(reservationId), CancellationToken.None);
+        var result = await _sut.Handle(new ConfirmReservationCommand(reservation.Id.Value), CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();

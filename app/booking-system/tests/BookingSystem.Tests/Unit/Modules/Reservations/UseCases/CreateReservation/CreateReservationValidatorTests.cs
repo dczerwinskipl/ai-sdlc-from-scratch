@@ -1,6 +1,6 @@
 using BookingSystem.Modules.Reservations.UseCases.CreateReservation;
 
-namespace BookingSystem.Tests.Unit.Validators;
+namespace BookingSystem.Tests.Unit.Modules.Reservations.UseCases.CreateReservation;
 
 public sealed class CreateReservationValidatorTests
 {
@@ -10,7 +10,7 @@ public sealed class CreateReservationValidatorTests
     private readonly CreateReservationValidator _sut = new();
 
     [Fact]
-    public void Returns_no_error_for_valid_command()
+    public void Validate_WhenCommandIsValid_ShouldReturnNoError()
     {
         // Arrange
         var command = new CreateReservationCommand(Guid.NewGuid(), "Jane Doe", Start, End);
@@ -25,7 +25,7 @@ public sealed class CreateReservationValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Returns_error_when_guest_name_is_empty(string guestName)
+    public void Validate_WhenGuestNameIsEmpty_ShouldReturnError(string guestName)
     {
         // Arrange
         var command = new CreateReservationCommand(Guid.NewGuid(), guestName, Start, End);
@@ -38,7 +38,7 @@ public sealed class CreateReservationValidatorTests
     }
 
     [Fact]
-    public void Returns_error_when_start_is_after_end()
+    public void Validate_WhenStartIsAfterEnd_ShouldReturnError()
     {
         // Arrange
         var command = new CreateReservationCommand(Guid.NewGuid(), "Jane Doe", End, Start);
@@ -51,7 +51,7 @@ public sealed class CreateReservationValidatorTests
     }
 
     [Fact]
-    public void Returns_error_when_start_equals_end()
+    public void Validate_WhenStartEqualsEnd_ShouldReturnError()
     {
         // Arrange
         var command = new CreateReservationCommand(Guid.NewGuid(), "Jane Doe", Start, Start);

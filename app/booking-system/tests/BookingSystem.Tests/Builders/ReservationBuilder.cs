@@ -1,5 +1,4 @@
 using BookingSystem.Modules.Reservations.Domain;
-using BookingSystem.Modules.Reservations.Infrastructure;
 
 namespace BookingSystem.Tests.Builders;
 
@@ -15,33 +14,15 @@ internal sealed class ReservationBuilder
     private DateTimeOffset _end = DefaultEnd;
     private ReservationStatus _targetStatus = ReservationStatus.Pending;
 
-    // Named scenarios
-
     public static ReservationBuilder Pending() => new();
-
-    public static ReservationBuilder Confirmed()
-    {
-        var b = new ReservationBuilder();
-        b._targetStatus = ReservationStatus.Confirmed;
-        return b;
-    }
-
-    public static ReservationBuilder Cancelled()
-    {
-        var b = new ReservationBuilder();
-        b._targetStatus = ReservationStatus.Cancelled;
-        return b;
-    }
-
-    // Fluent customisation
+    public static ReservationBuilder Confirmed() => new() { _targetStatus = ReservationStatus.Confirmed };
+    public static ReservationBuilder Cancelled() => new() { _targetStatus = ReservationStatus.Cancelled };
 
     public ReservationBuilder ForRoom(Guid roomId) { _roomId = roomId; return this; }
     public ReservationBuilder WithId(Guid id) { _id = id; return this; }
     public ReservationBuilder WithPeriod(DateTimeOffset start, DateTimeOffset end) { _start = start; _end = end; return this; }
 
-    // Store seeding
-
-    public Guid SeedInStore(InMemoryReservationStore store)
+    public Reservation Build()
     {
         var reservation = Reservation.Create(
             ReservationId.From(_id),
@@ -53,7 +34,6 @@ internal sealed class ReservationBuilder
         if (_targetStatus == ReservationStatus.Confirmed) reservation.Confirm();
         if (_targetStatus == ReservationStatus.Cancelled) reservation.Cancel();
 
-        store.Execute(r => r.Add(reservation));
-        return _id;
+        return reservation;
     }
 }

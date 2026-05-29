@@ -1,5 +1,4 @@
 using BookingSystem.Modules.RoomManagement.Domain;
-using BookingSystem.Modules.RoomManagement.Infrastructure;
 
 namespace BookingSystem.Tests.Builders;
 
@@ -22,7 +21,7 @@ internal sealed class RoomBuilder
     public RoomBuilder WithId(Guid id) { _id = id; return this; }
     public RoomBuilder WithCapacity(int capacity) { _capacity = capacity; return this; }
 
-    public Guid SeedInStore(InMemoryRoomStore store)
+    public Room Build()
     {
         var room = Room.Create(
             RoomId.From(_id),
@@ -30,8 +29,6 @@ internal sealed class RoomBuilder
             RoomCapacity.Create(_capacity));
 
         if (!_active) room.Deactivate();
-
-        store.Execute(rooms => rooms.Add(room));
-        return _id;
+        return room;
     }
 }

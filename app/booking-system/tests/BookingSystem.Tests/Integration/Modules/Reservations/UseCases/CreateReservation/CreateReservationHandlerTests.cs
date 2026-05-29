@@ -6,7 +6,7 @@ using BookingSystem.Modules.Reservations.UseCases.CreateReservation;
 using BookingSystem.Tests.Builders;
 using BookingSystem.Tests.Fakes;
 
-namespace BookingSystem.Tests.Integration.Reservations;
+namespace BookingSystem.Tests.Integration.Modules.Reservations.UseCases.CreateReservation;
 
 public sealed class CreateReservationHandlerTests
 {
@@ -28,11 +28,12 @@ public sealed class CreateReservationHandlerTests
     }
 
     [Fact]
-    public async Task Creates_reservation_when_room_is_active_and_period_is_available()
+    public async Task Handle_WhenRoomIsActiveAndPeriodIsAvailable_ShouldCreateReservation()
     {
         // Arrange
-        var roomId = RoomBuilder.Active().SeedInStore(_roomStore);
-        var command = new CreateReservationCommand(roomId, "Jane Doe", Start, End);
+        var room = RoomBuilder.Active().Build();
+        _roomStore.Execute(rooms => rooms.Add(room));
+        var command = new CreateReservationCommand(room.Id.Value, "Jane Doe", Start, End);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -43,11 +44,12 @@ public sealed class CreateReservationHandlerTests
     }
 
     [Fact]
-    public async Task New_reservation_is_pending()
+    public async Task Handle_WhenReservationIsCreated_ShouldHavePendingStatus()
     {
         // Arrange
-        var roomId = RoomBuilder.Active().SeedInStore(_roomStore);
-        var command = new CreateReservationCommand(roomId, "Jane Doe", Start, End);
+        var room = RoomBuilder.Active().Build();
+        _roomStore.Execute(rooms => rooms.Add(room));
+        var command = new CreateReservationCommand(room.Id.Value, "Jane Doe", Start, End);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -58,7 +60,7 @@ public sealed class CreateReservationHandlerTests
     }
 
     [Fact]
-    public async Task Returns_not_found_when_room_does_not_exist()
+    public async Task Handle_WhenRoomDoesNotExist_ShouldReturnNotFoundError()
     {
         // Arrange
         var command = new CreateReservationCommand(Guid.NewGuid(), "Jane Doe", Start, End);
@@ -72,11 +74,12 @@ public sealed class CreateReservationHandlerTests
     }
 
     [Fact]
-    public async Task Returns_conflict_when_room_is_inactive()
+    public async Task Handle_WhenRoomIsInactive_ShouldReturnConflictError()
     {
         // Arrange
-        var roomId = RoomBuilder.Inactive().SeedInStore(_roomStore);
-        var command = new CreateReservationCommand(roomId, "Jane Doe", Start, End);
+        var room = RoomBuilder.Inactive().Build();
+        _roomStore.Execute(rooms => rooms.Add(room));
+        var command = new CreateReservationCommand(room.Id.Value, "Jane Doe", Start, End);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
@@ -87,19 +90,19 @@ public sealed class CreateReservationHandlerTests
     }
 
     [Fact]
-    public async Task Returns_conflict_when_period_overlaps_existing_reservation()
+    public async Task Handle_WhenPeriodOverlapsExistingReservation_ShouldReturnConflictError()
     {
         // Arrange
-        var roomId = RoomBuilder.Active().SeedInStore(_roomStore);
-        ReservationBuilder.Pending()
-            .ForRoom(roomId)
-            .WithPeriod(Start, End)
-            .SeedInStore(_reservationStore);
+        var room = RoomBuilder.Active().Build();
+        _roomStore.Execute(rooms => rooms.Add(room));
 
-        var overlapping = new CreateReservationCommand(roomId, "John Doe", Start.AddMinutes(30), End.AddMinutes(30));
+        var existing = ReservationBuilder.Pending().ForRoom(room.Id.Value).WithPeriod(Start, End).Build();
+        _reservationStore.Execute(r => r.Add(existing));
+
+        var command = new CreateReservationCommand(room.Id.Value, "John Doe", Start.AddMinutes(30), End.AddMinutes(30));
 
         // Act
-        var result = await _sut.Handle(overlapping, CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -107,19 +110,19 @@ public sealed class CreateReservationHandlerTests
     }
 
     [Fact]
-    public async Task Allows_reservation_for_adjacent_period_on_same_room()
+    public async Task Handle_WhenPeriodIsAdjacentToExistingReservation_ShouldSucceed()
     {
         // Arrange
-        var roomId = RoomBuilder.Active().SeedInStore(_roomStore);
-        ReservationBuilder.Pending()
-            .ForRoom(roomId)
-            .WithPeriod(Start, End)
-            .SeedInStore(_reservationStore);
+        var room = RoomBuilder.Active().Build();
+        _roomStore.Execute(rooms => rooms.Add(room));
 
-        var adjacent = new CreateReservationCommand(roomId, "John Doe", End, End.AddHours(1));
+        var existing = ReservationBuilder.Pending().ForRoom(room.Id.Value).WithPeriod(Start, End).Build();
+        _reservationStore.Execute(r => r.Add(existing));
+
+        var command = new CreateReservationCommand(room.Id.Value, "John Doe", End, End.AddHours(1));
 
         // Act
-        var result = await _sut.Handle(adjacent, CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -128,11 +131,12 @@ public sealed class CreateReservationHandlerTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task Returns_validation_error_when_guest_name_is_empty(string guestName)
+    public async Task Handle_WhenGuestNameIsEmpty_ShouldReturnValidationError(string guestName)
     {
         // Arrange
-        var roomId = RoomBuilder.Active().SeedInStore(_roomStore);
-        var command = new CreateReservationCommand(roomId, guestName, Start, End);
+        var room = RoomBuilder.Active().Build();
+        _roomStore.Execute(rooms => rooms.Add(room));
+        var command = new CreateReservationCommand(room.Id.Value, guestName, Start, End);
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);

@@ -1,7 +1,7 @@
 using BookingSystem.BuildingBlocks.Domain;
 using BookingSystem.Modules.Reservations.Domain;
 
-namespace BookingSystem.Tests.Unit.Domain;
+namespace BookingSystem.Tests.Unit.Modules.Reservations.Domain;
 
 public sealed class ReservationTests
 {
@@ -17,7 +17,7 @@ public sealed class ReservationTests
     // Confirm
 
     [Fact]
-    public void Confirm_succeeds_for_pending_reservation()
+    public void Confirm_WhenReservationIsPending_ShouldSetStatusToConfirmed()
     {
         // Arrange
         var reservation = CreatePending();
@@ -31,7 +31,7 @@ public sealed class ReservationTests
     }
 
     [Fact]
-    public void Confirm_returns_domain_error_when_already_confirmed()
+    public void Confirm_WhenAlreadyConfirmed_ShouldReturnDomainError()
     {
         // Arrange
         var reservation = CreatePending();
@@ -46,7 +46,7 @@ public sealed class ReservationTests
     }
 
     [Fact]
-    public void Confirm_returns_domain_error_when_cancelled()
+    public void Confirm_WhenCancelled_ShouldReturnDomainError()
     {
         // Arrange
         var reservation = CreatePending();
@@ -63,7 +63,7 @@ public sealed class ReservationTests
     // Cancel
 
     [Fact]
-    public void Cancel_succeeds_for_pending_reservation()
+    public void Cancel_WhenReservationIsPending_ShouldSetStatusToCancelled()
     {
         // Arrange
         var reservation = CreatePending();
@@ -77,7 +77,7 @@ public sealed class ReservationTests
     }
 
     [Fact]
-    public void Cancel_succeeds_for_confirmed_reservation()
+    public void Cancel_WhenReservationIsConfirmed_ShouldSetStatusToCancelled()
     {
         // Arrange
         var reservation = CreatePending();
@@ -92,7 +92,7 @@ public sealed class ReservationTests
     }
 
     [Fact]
-    public void Cancel_returns_domain_error_when_already_cancelled()
+    public void Cancel_WhenAlreadyCancelled_ShouldReturnDomainError()
     {
         // Arrange
         var reservation = CreatePending();
@@ -109,7 +109,7 @@ public sealed class ReservationTests
     // ChangePeriod
 
     [Fact]
-    public void ChangePeriod_succeeds_for_pending_reservation()
+    public void ChangePeriod_WhenReservationIsPending_ShouldUpdatePeriod()
     {
         // Arrange
         var reservation = CreatePending();
@@ -126,7 +126,7 @@ public sealed class ReservationTests
     }
 
     [Fact]
-    public void ChangePeriod_returns_domain_error_when_cancelled()
+    public void ChangePeriod_WhenCancelled_ShouldReturnDomainError()
     {
         // Arrange
         var reservation = CreatePending();

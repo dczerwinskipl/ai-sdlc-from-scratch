@@ -4,7 +4,7 @@ using BookingSystem.Modules.RoomManagement.Infrastructure;
 using BookingSystem.Modules.RoomManagement.UseCases.DeactivateRoom;
 using BookingSystem.Tests.Builders;
 
-namespace BookingSystem.Tests.Integration.RoomManagement;
+namespace BookingSystem.Tests.Integration.Modules.RoomManagement.UseCases.DeactivateRoom;
 
 public sealed class DeactivateRoomHandlerTests
 {
@@ -13,40 +13,40 @@ public sealed class DeactivateRoomHandlerTests
 
     public DeactivateRoomHandlerTests()
     {
-        var repository = new InMemoryRoomRepository(_store);
-        _sut = new DeactivateRoomHandler(repository);
+        _sut = new DeactivateRoomHandler(new InMemoryRoomRepository(_store));
     }
 
     [Fact]
-    public async Task Deactivates_active_room()
+    public async Task Handle_WhenRoomExists_ShouldSetStatusToInactive()
     {
         // Arrange
-        var roomId = RoomBuilder.Active().SeedInStore(_store);
+        var room = RoomBuilder.Active().Build();
+        _store.Execute(rooms => rooms.Add(room));
 
         // Act
-        var result = await _sut.Handle(new DeactivateRoomCommand(roomId), CancellationToken.None);
+        var result = await _sut.Handle(new DeactivateRoomCommand(room.Id.Value), CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var room = _store.Execute(rooms => rooms.Single(r => r.Id.Value == roomId));
         room.Status.Should().Be(RoomStatus.Inactive);
     }
 
     [Fact]
-    public async Task Room_remains_in_store_after_deactivation()
+    public async Task Handle_WhenRoomIsDeactivated_ShouldRemainInStore()
     {
         // Arrange
-        var roomId = RoomBuilder.Active().SeedInStore(_store);
+        var room = RoomBuilder.Active().Build();
+        _store.Execute(rooms => rooms.Add(room));
 
         // Act
-        await _sut.Handle(new DeactivateRoomCommand(roomId), CancellationToken.None);
+        await _sut.Handle(new DeactivateRoomCommand(room.Id.Value), CancellationToken.None);
 
         // Assert
-        _store.Execute(rooms => rooms.Any(r => r.Id.Value == roomId)).Should().BeTrue();
+        _store.Execute(rooms => rooms.Any(r => r.Id == room.Id)).Should().BeTrue();
     }
 
     [Fact]
-    public async Task Returns_not_found_when_room_does_not_exist()
+    public async Task Handle_WhenRoomDoesNotExist_ShouldReturnNotFoundError()
     {
         // Arrange
         var command = new DeactivateRoomCommand(Guid.NewGuid());

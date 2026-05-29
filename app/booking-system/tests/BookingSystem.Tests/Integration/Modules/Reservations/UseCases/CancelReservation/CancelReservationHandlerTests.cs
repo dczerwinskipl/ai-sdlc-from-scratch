@@ -4,7 +4,7 @@ using BookingSystem.Modules.Reservations.Infrastructure;
 using BookingSystem.Modules.Reservations.UseCases.CancelReservation;
 using BookingSystem.Tests.Builders;
 
-namespace BookingSystem.Tests.Integration.Reservations;
+namespace BookingSystem.Tests.Integration.Modules.Reservations.UseCases.CancelReservation;
 
 public sealed class CancelReservationHandlerTests
 {
@@ -17,43 +17,40 @@ public sealed class CancelReservationHandlerTests
     }
 
     [Fact]
-    public async Task Cancels_pending_reservation()
+    public async Task Handle_WhenReservationIsPending_ShouldCancel()
     {
         // Arrange
-        var reservationId = ReservationBuilder.Pending().SeedInStore(_store);
+        var reservation = ReservationBuilder.Pending().Build();
+        _store.Execute(r => r.Add(reservation));
 
         // Act
-        var result = await _sut.Handle(new CancelReservationCommand(reservationId), CancellationToken.None);
+        var result = await _sut.Handle(new CancelReservationCommand(reservation.Id.Value), CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var reservation = _store.Execute(r => r.Single(x => x.Id.Value == reservationId));
         reservation.Status.Should().Be(ReservationStatus.Cancelled);
     }
 
     [Fact]
-    public async Task Cancels_confirmed_reservation()
+    public async Task Handle_WhenReservationIsConfirmed_ShouldCancel()
     {
         // Arrange
-        var reservationId = ReservationBuilder.Confirmed().SeedInStore(_store);
+        var reservation = ReservationBuilder.Confirmed().Build();
+        _store.Execute(r => r.Add(reservation));
 
         // Act
-        var result = await _sut.Handle(new CancelReservationCommand(reservationId), CancellationToken.None);
+        var result = await _sut.Handle(new CancelReservationCommand(reservation.Id.Value), CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var reservation = _store.Execute(r => r.Single(x => x.Id.Value == reservationId));
         reservation.Status.Should().Be(ReservationStatus.Cancelled);
     }
 
     [Fact]
-    public async Task Returns_not_found_when_reservation_does_not_exist()
+    public async Task Handle_WhenReservationDoesNotExist_ShouldReturnNotFoundError()
     {
-        // Arrange
-        var command = new CancelReservationCommand(Guid.NewGuid());
-
         // Act
-        var result = await _sut.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(new CancelReservationCommand(Guid.NewGuid()), CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -61,13 +58,14 @@ public sealed class CancelReservationHandlerTests
     }
 
     [Fact]
-    public async Task Returns_domain_error_when_already_cancelled()
+    public async Task Handle_WhenAlreadyCancelled_ShouldReturnDomainError()
     {
         // Arrange
-        var reservationId = ReservationBuilder.Cancelled().SeedInStore(_store);
+        var reservation = ReservationBuilder.Cancelled().Build();
+        _store.Execute(r => r.Add(reservation));
 
         // Act
-        var result = await _sut.Handle(new CancelReservationCommand(reservationId), CancellationToken.None);
+        var result = await _sut.Handle(new CancelReservationCommand(reservation.Id.Value), CancellationToken.None);
 
         // Assert
         result.IsFailure.Should().BeTrue();

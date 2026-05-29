@@ -1,13 +1,13 @@
 using BookingSystem.Modules.RoomManagement.UseCases.AddRoom;
 
-namespace BookingSystem.Tests.Unit.Validators;
+namespace BookingSystem.Tests.Unit.Modules.RoomManagement.UseCases.AddRoom;
 
 public sealed class AddRoomValidatorTests
 {
     private readonly AddRoomValidator _sut = new();
 
     [Fact]
-    public void Returns_no_error_for_valid_command()
+    public void Validate_WhenCommandIsValid_ShouldReturnNoError()
     {
         // Arrange
         var command = new AddRoomCommand("Conference Room A", 10);
@@ -22,7 +22,7 @@ public sealed class AddRoomValidatorTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Returns_error_when_name_is_empty(string name)
+    public void Validate_WhenNameIsEmpty_ShouldReturnError(string name)
     {
         // Arrange
         var command = new AddRoomCommand(name, 10);
@@ -38,7 +38,7 @@ public sealed class AddRoomValidatorTests
     [InlineData(0)]
     [InlineData(-1)]
     [InlineData(-100)]
-    public void Returns_error_when_capacity_is_not_positive(int capacity)
+    public void Validate_WhenCapacityIsNotPositive_ShouldReturnError(int capacity)
     {
         // Arrange
         var command = new AddRoomCommand("Room", capacity);
