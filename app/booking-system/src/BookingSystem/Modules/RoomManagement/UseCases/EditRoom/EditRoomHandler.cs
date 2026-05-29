@@ -13,11 +13,14 @@ internal sealed class EditRoomHandler(
     {
         var error = validator.Validate(command);
         if (error is not null)
-            return new ValidationError(error);
+            return error;
 
         var room = await repository.GetById(RoomId.From(command.RoomId), cancellationToken);
         if (room is null)
             return new NotFoundError($"Room {command.RoomId} not found.");
+
+        if (!room.IsActive)
+            return new ConflictError("Cannot edit an inactive room.");
 
         room.Rename(RoomName.Create(command.Name));
         room.ChangeCapacity(RoomCapacity.Create(command.Capacity));

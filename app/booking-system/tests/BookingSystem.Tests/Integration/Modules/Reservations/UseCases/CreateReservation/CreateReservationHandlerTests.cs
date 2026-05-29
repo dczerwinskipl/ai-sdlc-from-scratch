@@ -20,11 +20,10 @@ public sealed class CreateReservationHandlerTests
     public CreateReservationHandlerTests()
     {
         var reservationRepository = new InMemoryReservationRepository(_reservationStore);
-        var availabilityChecker   = new InMemoryReservationAvailabilityChecker(_reservationStore);
         var roomReader             = new InMemoryRoomReader(_roomStore);
-        var validator              = new CreateReservationValidator();
+        var validator              = new CreateReservationValidator(FakeClock.AtDefault());
         _sut = new CreateReservationHandler(
-            reservationRepository, availabilityChecker, roomReader, validator, FakeClock.AtDefault());
+            reservationRepository, roomReader, validator, FakeClock.AtDefault());
     }
 
     [Fact]

@@ -11,7 +11,7 @@ public sealed class ReservationTests
         ReservationGuest.Create("Jane Doe"),
         ReservationPeriod.Create(
             new DateTimeOffset(2026, 6, 1, 10, 0, 0, TimeSpan.Zero),
-            new DateTimeOffset(2026, 6, 1, 11, 0, 0, TimeSpan.Zero)),
+            new DateTimeOffset(2026, 6, 1, 11, 0, 0, TimeSpan.Zero)).Value!,
         DateTimeOffset.UtcNow);
 
     // Confirm
@@ -115,7 +115,7 @@ public sealed class ReservationTests
         var reservation = CreatePending();
         var newPeriod = ReservationPeriod.Create(
             new DateTimeOffset(2026, 6, 2, 10, 0, 0, TimeSpan.Zero),
-            new DateTimeOffset(2026, 6, 2, 12, 0, 0, TimeSpan.Zero));
+            new DateTimeOffset(2026, 6, 2, 12, 0, 0, TimeSpan.Zero)).Value!;
 
         // Act
         var result = reservation.ChangePeriod(newPeriod);
@@ -126,6 +126,25 @@ public sealed class ReservationTests
     }
 
     [Fact]
+    public void ChangePeriod_WhenConfirmed_ShouldRevertStatusToPending()
+    {
+        // Arrange
+        var reservation = CreatePending();
+        reservation.Confirm();
+        var newPeriod = ReservationPeriod.Create(
+            new DateTimeOffset(2026, 6, 2, 10, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 6, 2, 12, 0, 0, TimeSpan.Zero)).Value!;
+
+        // Act
+        var result = reservation.ChangePeriod(newPeriod);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        reservation.Period.Should().Be(newPeriod);
+        reservation.Status.Should().Be(ReservationStatus.Pending);
+    }
+
+    [Fact]
     public void ChangePeriod_WhenCancelled_ShouldReturnDomainError()
     {
         // Arrange
@@ -133,7 +152,7 @@ public sealed class ReservationTests
         reservation.Cancel();
         var newPeriod = ReservationPeriod.Create(
             new DateTimeOffset(2026, 6, 2, 10, 0, 0, TimeSpan.Zero),
-            new DateTimeOffset(2026, 6, 2, 12, 0, 0, TimeSpan.Zero));
+            new DateTimeOffset(2026, 6, 2, 12, 0, 0, TimeSpan.Zero)).Value!;
 
         // Act
         var result = reservation.ChangePeriod(newPeriod);

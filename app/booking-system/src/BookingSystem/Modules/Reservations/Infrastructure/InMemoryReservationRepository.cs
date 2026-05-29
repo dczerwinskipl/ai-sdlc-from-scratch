@@ -1,3 +1,4 @@
+using BookingSystem.BuildingBlocks.Domain;
 using BookingSystem.Modules.Reservations.Domain;
 using BookingSystem.Modules.Reservations.UseCases.Abstractions;
 
@@ -17,14 +18,46 @@ internal sealed class InMemoryReservationRepository(InMemoryReservationStore sto
         return Task.FromResult(reservations);
     }
 
-    public Task Add(Reservation reservation, CancellationToken cancellationToken)
+    public Task<bool> TryAdd(Reservation reservation, CancellationToken cancellationToken)
     {
-        store.Execute(r => r.Add(reservation));
-        return Task.CompletedTask;
+        var added = store.Execute(reservations =>
+        {
+            var hasConflict = reservations.Any(r =>
+                r.RoomId == reservation.RoomId &&
+                r.IsActive() &&
+                r.Period.Overlaps(reservation.Period));
+            if (hasConflict) return false;
+            reservations.Add(reservation);
+            return true;
+        });
+        return Task.FromResult(added);
+    }
+
+    public Task<Result> TryChangePeriod(Reservation reservation, ReservationPeriod newPeriod, CancellationToken cancellationToken)
+    {
+        var result = store.Execute(reservations =>
+        {
+            var hasConflict = reservations.Any(r =>
+                r.Id != reservation.Id &&
+                r.RoomId == reservation.RoomId &&
+                r.IsActive() &&
+                r.Period.Overlaps(newPeriod));
+
+            if (hasConflict)
+                return (Result)new ConflictError("The selected period overlaps with an existing reservation.");
+
+            return reservation.ChangePeriod(newPeriod);
+        });
+        return Task.FromResult(result);
     }
 
     public Task Update(Reservation reservation, CancellationToken cancellationToken)
     {
+        store.Execute(reservations =>
+        {
+            var index = reservations.FindIndex(x => x.Id == reservation.Id);
+            if (index >= 0) reservations[index] = reservation;
+        });
         return Task.CompletedTask;
     }
 }

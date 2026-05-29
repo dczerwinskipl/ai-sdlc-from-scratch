@@ -1,5 +1,6 @@
 using BookingSystem.BuildingBlocks.Application;
 using BookingSystem.BuildingBlocks.Domain;
+using BookingSystem.Modules.RoomManagement.PublicContracts;
 using BookingSystem.Modules.Reservations.Domain;
 using BookingSystem.Modules.Reservations.UseCases.Abstractions;
 
@@ -7,31 +8,29 @@ namespace BookingSystem.Modules.Reservations.UseCases.ChangeReservationPeriod;
 
 internal sealed class ChangeReservationPeriodHandler(
     IReservationRepository repository,
-    IReservationAvailabilityChecker availabilityChecker,
+    IRoomReader roomReader,
     ChangeReservationPeriodValidator validator) : ICommandHandler<ChangeReservationPeriodCommand>
 {
     public async Task<Result> Handle(ChangeReservationPeriodCommand command, CancellationToken cancellationToken)
     {
-        var validationError = validator.Validate(command);
-        if (validationError is not null)
-            return new ValidationError(validationError);
+        var error = validator.Validate(command);
+        if (error is not null)
+            return error;
 
         var reservationId = ReservationId.From(command.ReservationId);
         var reservation = await repository.GetById(reservationId, cancellationToken);
         if (reservation is null)
             return new NotFoundError($"Reservation {command.ReservationId} not found.");
 
-        var newPeriod = ReservationPeriod.Create(command.Start, command.End);
-        var available = await availabilityChecker.IsAvailable(
-            reservation.RoomId, newPeriod, reservationId, cancellationToken);
+        var room = await roomReader.GetById(reservation.RoomId.Value, cancellationToken);
+        if (room is null)
+            return new NotFoundError($"Room {reservation.RoomId.Value} not found.");
+        if (!room.IsActive)
+            return new ConflictError("Room is not available for reservations.");
 
-        if (!available)
-            return new ConflictError("The selected period overlaps with an existing reservation.");
+        var periodResult = ReservationPeriod.Create(command.Start, command.End);
+        if (periodResult.IsFailure) return periodResult.Error!;
 
-        var result = reservation.ChangePeriod(newPeriod);
-        if (result.IsFailure) return result;
-
-        await repository.Update(reservation, cancellationToken);
-        return Result.Success();
+        return await repository.TryChangePeriod(reservation, periodResult.Value!, cancellationToken);
     }
 }

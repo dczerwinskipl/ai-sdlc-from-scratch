@@ -19,7 +19,6 @@ public static class ReservationsModule
         services.AddSingleton<InMemoryReservationStore>();
 
         services.AddScoped<IReservationRepository, InMemoryReservationRepository>();
-        services.AddScoped<IReservationAvailabilityChecker, InMemoryReservationAvailabilityChecker>();
 
         services.AddSingleton<IClock, SystemClock>();
 

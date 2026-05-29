@@ -52,6 +52,8 @@ internal sealed class Reservation : AggregateRoot<ReservationId>
         if (Status == ReservationStatus.Cancelled)
             return new DomainError("Cannot change period of a cancelled reservation.");
         Period = newPeriod;
+        if (Status == ReservationStatus.Confirmed)
+            Status = ReservationStatus.Pending;
         return Result.Success();
     }
 

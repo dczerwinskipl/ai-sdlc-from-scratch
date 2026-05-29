@@ -28,7 +28,7 @@ internal sealed class ReservationBuilder
             ReservationId.From(_id),
             ReservableRoomId.From(_roomId),
             ReservationGuest.Create(_guestName),
-            ReservationPeriod.Create(_start, _end),
+            ReservationPeriod.Create(_start, _end).Value!,
             DateTimeOffset.UtcNow);
 
         if (_targetStatus == ReservationStatus.Confirmed) reservation.Confirm();

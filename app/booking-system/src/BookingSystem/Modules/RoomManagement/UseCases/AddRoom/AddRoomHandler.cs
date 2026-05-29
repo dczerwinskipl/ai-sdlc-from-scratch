@@ -13,7 +13,7 @@ internal sealed class AddRoomHandler(
     {
         var error = validator.Validate(command);
         if (error is not null)
-            return new ValidationError(error);
+            return error;
 
         var room = Room.Create(
             RoomId.New(),

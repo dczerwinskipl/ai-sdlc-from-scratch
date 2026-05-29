@@ -13,10 +13,10 @@ internal sealed class ReservationPeriod : ValueObject
         End = end;
     }
 
-    public static ReservationPeriod Create(DateTimeOffset start, DateTimeOffset end)
+    public static Result<ReservationPeriod> Create(DateTimeOffset start, DateTimeOffset end)
     {
         if (start >= end)
-            throw new DomainException("Start must be before end.");
+            return new DomainError("Start must be before end.");
         return new ReservationPeriod(start, end);
     }
 

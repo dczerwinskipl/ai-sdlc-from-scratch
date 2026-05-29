@@ -13,31 +13,34 @@ public sealed class ReservationPeriodTests
     public void Create_WhenStartIsBeforeEnd_ShouldSucceed()
     {
         // Arrange / Act
-        var period = ReservationPeriod.Create(Base, Base.AddHours(1));
+        var result = ReservationPeriod.Create(Base, Base.AddHours(1));
 
         // Assert
-        period.Start.Should().Be(Base);
-        period.End.Should().Be(Base.AddHours(1));
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Start.Should().Be(Base);
+        result.Value!.End.Should().Be(Base.AddHours(1));
     }
 
     [Fact]
-    public void Create_WhenStartEqualsEnd_ShouldThrowDomainException()
+    public void Create_WhenStartEqualsEnd_ShouldReturnFailure()
     {
         // Arrange / Act
-        var act = () => ReservationPeriod.Create(Base, Base);
+        var result = ReservationPeriod.Create(Base, Base);
 
         // Assert
-        act.Should().Throw<DomainException>();
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<DomainError>();
     }
 
     [Fact]
-    public void Create_WhenStartIsAfterEnd_ShouldThrowDomainException()
+    public void Create_WhenStartIsAfterEnd_ShouldReturnFailure()
     {
         // Arrange / Act
-        var act = () => ReservationPeriod.Create(Base.AddHours(1), Base);
+        var result = ReservationPeriod.Create(Base.AddHours(1), Base);
 
         // Assert
-        act.Should().Throw<DomainException>();
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<DomainError>();
     }
 
     // Overlap logic
@@ -46,8 +49,8 @@ public sealed class ReservationPeriodTests
     public void Overlaps_WhenPeriodsFullyOverlap_ShouldReturnTrue()
     {
         // Arrange
-        var a = ReservationPeriod.Create(Base, Base.AddHours(2));
-        var b = ReservationPeriod.Create(Base.AddMinutes(30), Base.AddMinutes(90));
+        var a = ReservationPeriod.Create(Base, Base.AddHours(2)).Value!;
+        var b = ReservationPeriod.Create(Base.AddMinutes(30), Base.AddMinutes(90)).Value!;
 
         // Act / Assert
         a.Overlaps(b).Should().BeTrue();
@@ -57,8 +60,8 @@ public sealed class ReservationPeriodTests
     public void Overlaps_WhenPeriodsPartiallyOverlap_ShouldReturnTrue()
     {
         // Arrange
-        var a = ReservationPeriod.Create(Base, Base.AddHours(2));
-        var b = ReservationPeriod.Create(Base.AddHours(1), Base.AddHours(3));
+        var a = ReservationPeriod.Create(Base, Base.AddHours(2)).Value!;
+        var b = ReservationPeriod.Create(Base.AddHours(1), Base.AddHours(3)).Value!;
 
         // Act / Assert
         a.Overlaps(b).Should().BeTrue();
@@ -68,8 +71,8 @@ public sealed class ReservationPeriodTests
     public void Overlaps_WhenPeriodsAreAdjacent_ShouldReturnFalse()
     {
         // Arrange
-        var a = ReservationPeriod.Create(Base, Base.AddHours(1));
-        var b = ReservationPeriod.Create(Base.AddHours(1), Base.AddHours(2));
+        var a = ReservationPeriod.Create(Base, Base.AddHours(1)).Value!;
+        var b = ReservationPeriod.Create(Base.AddHours(1), Base.AddHours(2)).Value!;
 
         // Act / Assert
         a.Overlaps(b).Should().BeFalse();
@@ -79,8 +82,8 @@ public sealed class ReservationPeriodTests
     public void Overlaps_WhenPeriodsDoNotOverlap_ShouldReturnFalse()
     {
         // Arrange
-        var a = ReservationPeriod.Create(Base, Base.AddHours(1));
-        var b = ReservationPeriod.Create(Base.AddHours(2), Base.AddHours(3));
+        var a = ReservationPeriod.Create(Base, Base.AddHours(1)).Value!;
+        var b = ReservationPeriod.Create(Base.AddHours(2), Base.AddHours(3)).Value!;
 
         // Act / Assert
         a.Overlaps(b).Should().BeFalse();

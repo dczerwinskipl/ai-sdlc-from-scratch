@@ -24,5 +24,7 @@ internal sealed class Room : AggregateRoot<RoomId>
 
     public void Deactivate() => Status = RoomStatus.Inactive;
 
-    public bool CanBeReserved() => Status == RoomStatus.Active;
+    public bool IsActive => Status == RoomStatus.Active;
+
+    public bool CanBeReserved() => IsActive;
 }
