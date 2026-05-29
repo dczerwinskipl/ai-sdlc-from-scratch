@@ -1,22 +1,22 @@
 # Booking Domain Context
 
-This project models a booking or reservation system.
+This file contains project-specific facts, known rules, and documented decisions.
 
-This file is project-specific. Do not copy these rules into generic DDD instructions.
+Do not add generic DDD guidance here. Generic discovery rules live in `instructions/core/ddd/`.
 
-## Known modules
+---
 
-### Reservations (implemented)
+## Module: Reservations
 
 Owns reservation intent and reservation lifecycle.
 
 Aggregate: `Reservation`
 
-Known state transitions:
+State transitions:
 - `Pending → Confirmed` via ConfirmReservation
 - `Pending → Cancelled` via CancelReservation
 - `Confirmed → Cancelled` via CancelReservation
-- `Confirmed → Pending` when the reservation period is changed (confirmation is invalidated)
+- `Confirmed → Pending` when the reservation period is changed
 
 Known rules:
 - A reservation can only be created for an active room.
@@ -25,11 +25,13 @@ Known rules:
 - Changing the period of a confirmed reservation reverts its status to Pending.
 - Start date must be in the future at the time of creation or period change.
 
-Cross-module dependency: reads room existence and active status from RoomManagement via `IRoomReader` / `RoomInfo`. References room identity only — does not copy room descriptive data.
+Cross-module dependency: reads room existence and active status from RoomManagement via `IRoomReader` / `RoomInfo`. References room identity only (`ReservableRoomId`) — does not copy room descriptive data.
 
-### RoomManagement (implemented)
+---
 
-Owns room descriptive data and room operational status.
+## Module: RoomManagement
+
+Owns room descriptive data (`RoomName`, `RoomCapacity`) and room operational status (`RoomStatus`).
 
 Aggregate: `Room`
 
@@ -42,55 +44,32 @@ Known rules:
 
 Public contract exposed to other modules: `IRoomReader` returning `RoomInfo` (id, name, capacity, isActive).
 
-Note: this module currently merges what future design might separate into Catalogue (descriptive data) and Availability (operational status). Do not silently split it without an architecture decision.
+---
 
-## Not yet implemented
+## Documented MVP decisions
 
-The following domain areas are known but not implemented:
+These are intentional shortcuts taken to ship quickly. They are known trade-offs, not accidents.
 
-- **Maintenance**: time-bounded operational blocks that make a room unavailable without deactivating it. Not the same as `Inactive` status, which is permanent.
-- **Notifications**: communication triggered by reservation lifecycle events (creation, confirmation, cancellation, period change).
+### Availability check embedded in repository
 
-When a feature requirement touches maintenance or notifications, flag it as an open question and do not model it as part of Reservations or RoomManagement without an explicit architecture decision.
+Overlap detection lives inside `IReservationRepository.TryAdd` and `TryChangePeriod` rather than in a separate Availability module or service.
 
-## Known behavior implications
+**Reason:** Time pressure. We wanted a working implementation fast. A dedicated Availability module was considered but deferred.
 
-When a feature affects room availability, the spec must explicitly check whether it also affects:
+**Known limitation:** Availability rules cannot be changed or tested independently of the repository.
 
-- reservation lifecycle
-- existing reservations
-- the room active/inactive status
-- the `IRoomReader` public contract
-- search or availability queries
+### Room active/inactive status used directly
 
-When a feature affects reservation lifecycle, the spec must explicitly define state transition rules.
+Reservations read room status via `IRoomReader.IsActive` rather than through a dedicated Availability or scheduling layer.
 
-When a feature uses room data, the spec must distinguish:
+**Reason:** Time pressure. The simplest model that worked for MVP. A richer availability model (time-bounded blocks, maintenance windows) was considered but deferred.
 
-- room identity referenced by Reservations (`ReservableRoomId`)
-- descriptive data owned by RoomManagement (`RoomName`, `RoomCapacity`)
-- operational status owned by RoomManagement (`RoomStatus.Active / Inactive`)
+**Known limitation:** There is no way to temporarily block a room without fully deactivating it.
 
-## Default modeling bias
+---
 
-Prefer referencing external concepts by identity across module boundaries.
+## API stability
 
-Do not copy room descriptive data into Reservations unless the spec explicitly requires snapshotting at booking time.
+There are currently no external consumers of this API.
 
-Do not treat room deactivation as equivalent to a maintenance block. Deactivation is a permanent operational decision; maintenance is a time-bounded availability constraint.
-
-Do not split RoomManagement into separate Catalogue and Availability modules without an explicit architecture decision. The current merged model is intentional at this stage.
-
-## Project-specific discovery prompts
-
-When requirements mention a room, booking, reservation, block, maintenance, or availability, ask:
-
-- What is the affected resource?
-- Is this a reservation intent or an availability constraint?
-- Does the change block new reservations only, or does it also affect existing ones?
-- Does it require a state transition in Reservation?
-- Does it affect the `IRoomReader` public contract?
-- Does it require notification?
-- Who should receive the notification?
-- Is the behavior visible to guests, staff, both, or neither?
-- Does it imply a new actor, guest, owner, payer, or contact distinction?
+Breaking changes to endpoints, request shapes, and response shapes are acceptable without versioning or backward compatibility obligations.
