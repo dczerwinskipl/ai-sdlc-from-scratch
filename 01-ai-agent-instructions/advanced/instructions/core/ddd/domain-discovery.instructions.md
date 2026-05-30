@@ -1,3 +1,5 @@
+<!-- Type: reasoning -->
+
 # Domain Discovery
 
 Identify domain concepts by behavior, lifecycle, ownership, and language, not by existing class names.
@@ -19,7 +21,7 @@ For each important noun, process, or rule, ask:
 
 ## Extraction signals
 
-Consider a separate domain capability, module, or bounded context when:
+The Spec Writer must flag a domain extraction concern when:
 
 - the concept has an independent lifecycle
 - the concept owns data used by multiple flows
@@ -40,6 +42,23 @@ Do not propose a new module only because:
 - the code would look cleaner
 - a pattern could be applied
 
+## Simplest local alternative
+
+Before proposing extraction of a concept into a separate aggregate, module, or bounded context, the Spec Writer must:
+
+1. Describe the simplest local model — what the implementation looks like if the concept stays where it is.
+2. Explain why the local model is insufficient or creates unacceptable risk.
+3. Propose extraction only when the local model fails at least one of:
+   - independent lifecycle
+   - independent ownership
+   - independent business rules
+   - multiple independent consumers
+   - separate consistency requirements
+   - separate evolution pressure
+   - separate language
+   - integration boundary
+   - known future variants the local model cannot accommodate
+
 ## Discovery vs decision
 
 The agent may discover architectural concerns and recommend options.
@@ -59,3 +78,11 @@ Mark as Decision Required when the change affects:
 - transaction model
 - integration model
 - public contracts
+
+## Negative example
+
+Example only — not a project rule:
+
+Bad: "Maintenance is mentioned in the requirement. Create a Maintenance module."
+
+Good: "Maintenance appears in the requirement. Flag it as a domain extraction candidate. Present it in domain discovery with extraction signals. Propose it as one option in option analysis. Ask for human direction before changing module boundaries."

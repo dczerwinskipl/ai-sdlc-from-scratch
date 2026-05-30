@@ -1,4 +1,8 @@
+<!-- Type: reasoning -->
+
 # Domain Archetypes
+
+Apply this file when requirements mention identity, ownership, lifecycle, roles, resource usage, allocation, policy, or stateful coordination.
 
 Use archetypes as discovery aids, not as implementation instructions.
 
@@ -141,3 +145,11 @@ Check:
 - whether the process owns state
 - whether it is orchestration, choreography, or simple application service flow
 - whether failure compensation is required
+
+## Negative example
+
+Example only — not a project rule:
+
+Bad: "The feature involves a resource. Apply the Resource archetype and create a separate Resource aggregate."
+
+Good: "The feature involves a concept that behaves like a resource. Ask whether it has independent lifecycle, ownership, and multiple consumers. If yes, flag it as a discovery candidate, not a decision."

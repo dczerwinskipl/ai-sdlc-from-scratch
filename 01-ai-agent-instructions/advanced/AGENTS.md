@@ -8,6 +8,8 @@ When operating as a planning, specification, or architecture-aware agent, follow
 - `instructions/workflows/spec-writer-flow.instructions.md`
 - `instructions/workflows/solution-option-analysis.instructions.md`
 - `instructions/workflows/architecture-approval-gate.instructions.md`
+- `instructions/core/reasoning/open-questions-and-assumptions.instructions.md`
+- `instructions/core/reasoning/high-impact-semantics.instructions.md`
 - `instructions/core/ddd/domain-discovery.instructions.md`
 - `instructions/core/ddd/aggregate-lifecycle.instructions.md`
 - `instructions/core/ddd/domain-archetypes.instructions.md`
@@ -21,16 +23,6 @@ The agent must not approve architectural changes or generate final implementatio
 
 ## Required checkpoint
 
-Stop and ask for human direction confirmation before implementation planning when the recommendation changes or introduces:
+Stop and ask for human direction confirmation when the recommendation triggers the architecture approval gate.
 
-- module boundaries
-- bounded contexts
-- aggregate ownership
-- data ownership
-- public contracts
-- integration contracts
-- transaction boundaries
-- consistency model
-- domain events or integration events
-- feature scope beyond explicit requirements
-- a common archetype as a structural model
+See the full trigger list in `instructions/workflows/architecture-approval-gate.instructions.md`.

@@ -1,6 +1,8 @@
+<!-- Type: workflow -->
+
 # Solution Option Analysis
 
-When a requirement may change the domain model or architecture, the Spec Writer must prepare option analysis before producing implementation tasks.
+When a requirement may change the domain model or architecture, prepare option analysis before producing implementation tasks.
 
 ## Required input
 
@@ -8,7 +10,7 @@ First establish:
 
 - confirmed acceptance criteria
 - draft acceptance criteria
-- open questions
+- open questions and their classification
 - existing system behaviors
 - affected domain concepts
 - affected modules
@@ -18,7 +20,7 @@ If acceptance criteria are missing or too weak, create draft acceptance criteria
 
 ## Required options
 
-Propose exactly three models:
+Propose two or three models that represent meaningfully different trade-offs. Use the names below as defaults when they fit. Replace them with names that better reflect the actual trade-off being made. Do not force a third model when only two trade-offs exist.
 
 ### 1. Minimal Change Model
 
@@ -26,11 +28,39 @@ The smallest safe implementation that can satisfy the current requirements.
 
 This model may be acceptable for limited scope, but must clearly document domain or maintenance risks.
 
+**Model intent:**
+
+| Field | Content |
+|---|---|
+| Proposed because | Fastest path to satisfying current AC without structural change |
+| Starting assumption | The feature is self-contained and unlikely to grow in ways that make the shortcut costly |
+| Optimizes for | Delivery speed, low regression risk |
+| Protects | Existing structure, minimal migration effort |
+| Sacrifices | May preserve known ownership or lifecycle issues |
+| Keeps open | All future structural options (no structural commitment made) |
+| Makes harder | Adding domain rules, ownership clarity, or lifecycle independence later without revisiting this decision |
+| Good fit when | Scope is small, future extension is unlikely, shortcuts are acceptable |
+| Bad fit when | The feature will grow or the shortcut will become permanent |
+
 ### 2. Incremental Domain Model
 
 A model that improves domain boundaries without requiring full restructuring.
 
-This is often the preferred recommendation when it satisfies the acceptance criteria and avoids the main ownership mistake.
+This is often the preferred recommendation when it satisfies the AC and avoids the main ownership mistake.
+
+**Model intent:**
+
+| Field | Content |
+|---|---|
+| Proposed because | Fixes the most important domain or ownership issue without full restructuring |
+| Starting assumption | One specific boundary fix removes the most significant risk without needing the full target architecture |
+| Optimizes for | Domain correctness, future maintainability |
+| Protects | Bounded context integrity, lifecycle ownership |
+| Sacrifices | More effort than minimal change |
+| Keeps open | The remaining path to the target domain model |
+| Makes harder | Undoing the boundary fix if the assumption about scope turns out to be wrong |
+| Good fit when | One domain boundary fix makes the design clearly better |
+| Bad fit when | The full restructuring is needed anyway, making incremental a poor middle step |
 
 ### 3. Target Domain Model
 
@@ -38,7 +68,21 @@ The cleanest long-term model if cost, migration, and regression risk are accepta
 
 This model must not be recommended only because it looks architecturally pure.
 
-## Required evaluation
+**Model intent:**
+
+| Field | Content |
+|---|---|
+| Proposed because | Establishes the correct long-term model |
+| Starting assumption | The strategic value of the clean model justifies the higher cost now |
+| Optimizes for | Extensibility, architectural consistency, long-term maintenance |
+| Protects | All domain boundaries, clear ownership, future variant support |
+| Sacrifices | Higher implementation and migration cost, broader regression scope |
+| Keeps open | All future capabilities that depend on clean boundaries and clear ownership |
+| Makes harder | Rolling back or simplifying after the full restructuring is done |
+| Good fit when | Strategic feature, upcoming related use cases, long-term foundation needed |
+| Bad fit when | Scope is a one-off, cost is not justified, architectural purity drives the choice |
+
+## Evaluation fields
 
 For each model include:
 
@@ -48,39 +92,60 @@ For each model include:
 - acceptance criteria coverage
 - benefits
 - risks
-- implementation complexity
+- implementation complexity (t-shirt size — see `instructions/core/estimation/tshirt-sizing.instructions.md`)
 - domain risk
 - operational risk
-- t-shirt size
-- confidence
 - migration impact
 - future maintenance impact
 - decision scope
 
+Include fields that materially affect the decision. For small-scope changes (XS/S size), limit to AC coverage, benefits, risks, and implementation complexity. Skip fields that would be identical or empty for all models.
+
 ## T-shirt sizing
 
-Use:
+See `instructions/core/estimation/tshirt-sizing.instructions.md` for size definitions and guidance.
 
-- XS
-- S
-- M
-- L
-- XL
-- XXL
+## Trade-off dimensions
 
-Size represents relative implementation complexity, architectural impact, uncertainty, and regression scope.
-It is not a time estimate.
+Evaluate models across dimensions that materially affect the decision.
 
-Guidance:
+Mark a dimension as "not relevant" if it clearly does not apply — do not force a full table for every task.
 
-- XS: trivial local change, no domain decision, persistence change, or contract change
-- S: small local change inside one module, known pattern, low uncertainty
-- M: moderate feature or rule change, one main module, some persistence, contract, or test impact
-- L: significant domain change, affects lifecycle, aggregate boundaries, module boundaries, or multiple behaviors
-- XL: architectural change, multiple modules, ownership changes, new contracts, migration, broad regression scope
-- XXL: too large for one implementation slice, must be split before implementation
+Relevant dimensions to consider when they matter:
 
-If a model is XL or XXL, propose smaller implementation slices.
+- implementation cost
+- migration cost
+- future maintainability
+- domain correctness
+- architectural consistency
+- coupling and cohesion
+- reversibility
+- test scope and regression risk
+- observability
+- operational complexity
+- performance and scalability
+- security and compliance
+- auditability and data consistency
+- integration complexity
+- developer experience
+- risk of becoming a permanent shortcut
+- ability to support future input or output channels
+- ability to support future business variants or actors
+
+## Future-scenario probing
+
+Before recommending a model, the Spec Writer must assess whether future direction could change the choice.
+
+Ask when relevant:
+
+- Are similar future use cases expected that may affect the same concept from other processes, actors, or integration points?
+- Is this feature a one-off addition or the first step toward a more general capability?
+- Are additional input or output channels likely?
+- Are new business variants, actors, or external systems expected?
+- Is the goal fastest delivery, MVP, production hardening, or long-term foundation?
+- Are temporary shortcuts acceptable, or should the spec avoid solutions that may become permanent?
+
+Use concrete examples when helpful, but mark them as examples — do not hardcode project-specific scenarios.
 
 ## Recommendation rule
 
@@ -97,6 +162,12 @@ The recommendation must not be based only on the smallest size.
 A model may be low effort but high domain risk.
 A model may be higher effort but lower long-term domain risk.
 
+The recommendation must document the decision basis explicitly.
+
 ## Required human decision
 
-If the recommended model changes architecture, domain ownership, contracts, or scope, ask for human direction confirmation before implementation planning.
+If the recommended model changes architecture, domain ownership, contracts, or scope, follow the direction questions, recommendation, and confirmation steps in `instructions/workflows/spec-writer-flow.instructions.md` (Steps 9–11):
+
+1. Ask direction questions before recommending
+2. Recommend after the user answers
+3. Ask for simple confirmation before generating the final spec

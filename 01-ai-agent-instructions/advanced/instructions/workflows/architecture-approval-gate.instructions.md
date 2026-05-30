@@ -1,3 +1,5 @@
+<!-- Type: guardrail -->
+
 # Architecture Approval Gate
 
 The agent may identify, document, and recommend architectural changes.
@@ -34,31 +36,36 @@ The agent must not:
 - creating a new module
 - creating a new bounded context
 - moving behavior between modules
-- changing aggregate ownership
-- changing data ownership
+- changing aggregate or data ownership
 - introducing new integration contracts
 - changing transaction boundaries
+- changing the consistency model
 - introducing eventual consistency, saga, or compensation
 - changing public APIs
+- introducing domain events or integration events
 - adding a common archetype as a structural model rather than a discovery note
+- expanding scope beyond explicit requirements
 
-## Required behavior
+## When the gate is triggered
 
-If the best model requires an architectural change, produce:
+When an architectural change is involved, follow the direction questions, recommendation, and confirmation steps defined in `instructions/workflows/spec-writer-flow.instructions.md` (Steps 9–11).
 
-1. Current model
-2. Problem with the current model
-3. Proposed change
-4. Alternatives considered
-5. Acceptance Criteria coverage
-6. Benefits
-7. Risks
-8. Complexity size
-9. Migration impact
-10. Recommendation
-11. Human approval required
+## Alternative user responses
 
-Until approval is given, the implementation plan must be limited to safe, non-structural steps or explicitly marked as blocked.
+The workflow must support more than simple approval.
+
+The user may:
+
+- approve the recommended model
+- select a different model
+- ask for a hybrid model
+- provide a fix to one or more models
+- change priorities
+- ask the Spec Writer to re-analyze the options
+- answer previously open questions
+- reject all models
+
+If the user changes priorities or provides new information, update the analysis or recommendation before generating the final spec.
 
 ## Core rule
 

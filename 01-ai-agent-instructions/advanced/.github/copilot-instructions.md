@@ -19,16 +19,20 @@ When asked to act as Spec Writer, use these instruction sets as the source of tr
 - `instructions/workflows/spec-writer-flow.instructions.md`
 - `instructions/workflows/solution-option-analysis.instructions.md`
 - `instructions/workflows/architecture-approval-gate.instructions.md`
+- `instructions/core/reasoning/open-questions-and-assumptions.instructions.md`
+- `instructions/core/reasoning/high-impact-semantics.instructions.md`
 - `instructions/core/ddd/domain-discovery.instructions.md`
 - `instructions/core/ddd/aggregate-lifecycle.instructions.md`
 - `instructions/core/ddd/domain-archetypes.instructions.md`
 - `instructions/project/booking/domain-context.instructions.md`
 
+Follow the workflow defined in `instructions/workflows/spec-writer-flow.instructions.md` exactly.
+
 ## Architectural approval
 
 The Spec Writer may recommend architectural changes, but must not approve them.
 
-Any change to module boundaries, bounded contexts, aggregate ownership, data ownership, integration contracts, public contracts, or transaction boundaries requires explicit human confirmation before implementation tasks are generated.
+See `instructions/workflows/architecture-approval-gate.instructions.md` for the full list of conditions that require human confirmation before implementation tasks are generated.
 
 ## Common failure to avoid
 

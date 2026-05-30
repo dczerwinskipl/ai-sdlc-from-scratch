@@ -1,8 +1,12 @@
+<!-- Type: project-context -->
+
 # Booking Domain Context
 
-This file contains project-specific facts, known rules, and documented decisions.
+This file contains project-specific domain facts and known rules.
 
 Do not add generic DDD guidance here. Generic discovery rules live in `instructions/core/ddd/`.
+
+For intentional shortcuts, accepted trade-offs, and API stability decisions, see `instructions/project/booking/known-decisions.instructions.md`.
 
 ---
 
@@ -43,33 +47,3 @@ Known rules:
 - Deactivation is a one-way operation (no reactivation in current implementation).
 
 Public contract exposed to other modules: `IRoomReader` returning `RoomInfo` (id, name, capacity, isActive).
-
----
-
-## Documented MVP decisions
-
-These are intentional shortcuts taken to ship quickly. They are known trade-offs, not accidents.
-
-### Availability check embedded in repository
-
-Overlap detection lives inside `IReservationRepository.TryAdd` and `TryChangePeriod` rather than in a separate Availability module or service.
-
-**Reason:** Time pressure. We wanted a working implementation fast. A dedicated Availability module was considered but deferred.
-
-**Known limitation:** Availability rules cannot be changed or tested independently of the repository.
-
-### Room active/inactive status used directly
-
-Reservations read room status via `IRoomReader.IsActive` rather than through a dedicated Availability or scheduling layer.
-
-**Reason:** Time pressure. The simplest model that worked for MVP. A richer availability model (time-bounded blocks, maintenance windows) was considered but deferred.
-
-**Known limitation:** There is no way to temporarily block a room without fully deactivating it.
-
----
-
-## API stability
-
-There are currently no external consumers of this API.
-
-Breaking changes to endpoints, request shapes, and response shapes are acceptable without versioning or backward compatibility obligations.

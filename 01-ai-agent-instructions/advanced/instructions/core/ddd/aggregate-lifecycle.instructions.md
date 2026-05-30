@@ -1,4 +1,8 @@
+<!-- Type: reasoning -->
+
 # Aggregate and Lifecycle Analysis
+
+Apply this file when domain discovery identifies multiple candidate aggregates, lifecycle overlap, or unclear ownership between concepts.
 
 Aggregate boundaries must be based on consistency rules and lifecycle ownership, not object containment.
 
@@ -28,15 +32,3 @@ Flag a concern when:
 - an aggregate becomes a workflow coordinator
 - an aggregate requires data from unrelated modules to validate basic rules
 - a descriptive concept is treated as locally owned only because it is needed for display
-
-## Required recommendation format
-
-When proposing aggregate changes, include:
-
-- current aggregate
-- mixed responsibility
-- proposed aggregate ownership
-- consistency requirement
-- transactional boundary
-- events or application service coordination required
-- whether human approval is required

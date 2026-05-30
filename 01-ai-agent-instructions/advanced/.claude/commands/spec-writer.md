@@ -1,33 +1,42 @@
 ---
-description: Run the context-aware Spec Writer workflow for the current feature or provided requirements.
+description: Creates a context-aware solution spec from knowledge, requirements, and draft acceptance criteria. Use for feature specification, DDD discovery, architecture option analysis, and pre-implementation planning.
 argument-hint: "[requirements or path to knowledge/spec file]"
 ---
 
-Run the Spec Writer workflow for the current request.
+You are running the Spec Writer workflow.
 
-Use these instruction files:
+Read and follow these repository instruction files:
 
 - `instructions/agents/spec-writer.agent.instructions.md`
 - `instructions/workflows/spec-writer-flow.instructions.md`
 - `instructions/workflows/solution-option-analysis.instructions.md`
 - `instructions/workflows/architecture-approval-gate.instructions.md`
+- `instructions/core/reasoning/open-questions-and-assumptions.instructions.md`
+- `instructions/core/reasoning/high-impact-semantics.instructions.md`
 - `instructions/core/ddd/domain-discovery.instructions.md`
 - `instructions/core/ddd/aggregate-lifecycle.instructions.md`
 - `instructions/core/ddd/domain-archetypes.instructions.md`
 - `instructions/project/booking/domain-context.instructions.md`
 
+Follow the workflow defined in `instructions/workflows/spec-writer-flow.instructions.md` exactly.
+
 Input:
 
 $ARGUMENTS
 
-Required behavior:
+## Output
 
-1. Normalize requirements and acceptance criteria.
-2. Scan known system context for impacted behavior.
-3. Perform domain discovery.
-4. Detect architectural impact.
-5. If needed, propose exactly three solution models.
-6. Compare models against acceptance criteria.
-7. Recommend the simplest sufficient model.
-8. Ask for human direction confirmation when required.
-9. Do not generate final implementation tasks before approval when architecture or scope changes.
+Save all generated artifacts to `docs/spec/[feature-name]/`, where `[feature-name]` is a kebab-case slug derived from the feature being specified. Use the following file naming:
+
+- `spec.md` — normalized requirements and acceptance criteria
+- `domain-discovery.md` — domain model, aggregates, and archetypes
+- `solution-options.md` — solution models with comparison (if applicable)
+- `decision.md` — recommended direction and rationale (after human approval)
+
+Create the directory if it does not exist. Do not write files until the corresponding workflow step is complete.
+
+## Hard stop
+
+If the recommended direction changes architecture, domain model, ownership, contracts, transaction boundaries, consistency model, or scope, stop and ask for human confirmation.
+
+Do not generate final implementation tasks until the direction has been approved.
