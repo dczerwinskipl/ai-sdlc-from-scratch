@@ -5,20 +5,7 @@ argument-hint: "[requirements or path to knowledge/spec file]"
 
 You are running the Spec Writer workflow.
 
-Read and follow these repository instruction files:
-
-- `instructions/agents/spec-writer.agent.instructions.md`
-- `instructions/workflows/spec-writer-flow.instructions.md`
-- `instructions/workflows/solution-option-analysis.instructions.md`
-- `instructions/workflows/architecture-approval-gate.instructions.md`
-- `instructions/core/reasoning/open-questions-and-assumptions.instructions.md`
-- `instructions/core/reasoning/high-impact-semantics.instructions.md`
-- `instructions/core/ddd/domain-discovery.instructions.md`
-- `instructions/core/ddd/aggregate-lifecycle.instructions.md`
-- `instructions/core/ddd/domain-archetypes.instructions.md`
-- `instructions/project/booking/domain-context.instructions.md`
-
-Follow the workflow defined in `instructions/workflows/spec-writer-flow.instructions.md` exactly.
+Follow `instructions/agents/spec-writer.manifest.md` for the complete list of instruction files to load and under what conditions.
 
 Input:
 
@@ -32,6 +19,7 @@ Save all generated artifacts to `docs/spec/[feature-name]/`, where `[feature-nam
 - `domain-discovery.md` — domain model, aggregates, and archetypes
 - `solution-options.md` — solution models with comparison (if applicable)
 - `decision.md` — recommended direction and rationale (after human approval)
+- `implementation-plan.md` — ordered tasks, interface definitions, API paths, slice boundaries (after human approval, Phase 9 only)
 
 Create the directory if it does not exist. Do not write files until the corresponding workflow step is complete.
 

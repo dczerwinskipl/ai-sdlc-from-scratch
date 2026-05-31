@@ -1,4 +1,4 @@
-<!-- Type: guardrail -->
+<!-- Archetype: RULES -->
 
 # Architecture Approval Gate
 
@@ -46,26 +46,47 @@ The agent must not:
 - adding a common archetype as a structural model rather than a discovery note
 - expanding scope beyond explicit requirements
 
-## When the gate is triggered
+## Confirmation procedure
 
-When an architectural change is involved, follow the direction questions, recommendation, and confirmation steps defined in `instructions/workflows/spec-writer-flow.instructions.md` (Steps 9–11).
+When the gate is triggered, present the following before generating the final spec:
 
-## Alternative user responses
+- recommended model and why
+- what will be implemented if approved
+- what stays out of scope
+- decisions the human must make now
+- decisions that can be deferred
+- unresolved open questions that still matter
 
-The workflow must support more than simple approval.
+Then ask for confirmation using exactly this menu:
+
+```
+Do you want me to use this direction for the final spec?
+
+1. Yes, use this model.
+2. No, revise the models.
+3. Analyze the options again with different priorities.
+4. I want to provide my own direction.
+```
+
+## After the user responds
 
 The user may:
 
-- approve the recommended model
-- select a different model
-- ask for a hybrid model
-- provide a fix to one or more models
-- change priorities
-- ask the Spec Writer to re-analyze the options
-- answer previously open questions
-- reject all models
+- approve the recommended model (option 1) — proceed to implementation planning
+- reject and request revision (option 2) — revise models and re-run Steps 7–10
+- request re-analysis with different priorities (option 3) — return to Step 9 with the new priority context
+- provide their own direction (option 4) — treat the user's direction as the approved model and document it in the decision record
 
 If the user changes priorities or provides new information, update the analysis or recommendation before generating the final spec.
+
+## Hard stop
+
+The agent must not generate final implementation tasks until one of:
+
+- option 1 is selected, or
+- the user provides their own direction (option 4)
+
+Until confirmation is given, the implementation plan must be limited to safe, non-structural steps or explicitly marked as blocked.
 
 ## Core rule
 

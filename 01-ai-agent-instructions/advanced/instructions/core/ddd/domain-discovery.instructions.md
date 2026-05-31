@@ -1,4 +1,4 @@
-<!-- Type: reasoning -->
+<!-- Archetype: RULES -->
 
 # Domain Discovery
 

@@ -16,49 +16,16 @@ Its main job is to:
 - scan known system behavior for impact
 - perform DDD-oriented domain discovery
 - detect architectural concerns
-- propose three solution models when needed
+- propose two or three solution models when needed
 - compare models against acceptance criteria
-- recommend the simplest sufficient model
+- recommend based on stated priorities, domain invariants, and cost — in that order
 - ask for human direction confirmation before architecture changes are turned into implementation tasks
 
 ## Structure
 
-```txt
-instructions/
-  agents/
-    spec-writer.agent.instructions.md
+The instruction loading rules are maintained in a single canonical location: `instructions/agents/spec-writer.manifest.md`.
 
-  workflows/
-    spec-writer-flow.instructions.md
-    solution-option-analysis.instructions.md
-    architecture-approval-gate.instructions.md
-
-  core/
-    ddd/
-      domain-discovery.instructions.md
-      aggregate-lifecycle.instructions.md
-      domain-archetypes.instructions.md
-
-  project/
-    booking/
-      domain-context.instructions.md
-
-.github/
-  copilot-instructions.md
-  instructions/
-    spec-writer.instructions.md
-
-.claude/
-  agents/
-    spec-writer.md
-  skills/
-    spec-writer/
-      SKILL.md
-  commands/
-    spec-writer.md
-
-AGENTS.md
-```
+All tool adapters (`.claude/`, `.github/`, `AGENTS.md`) reference the manifest instead of maintaining their own lists.
 
 ## Copilot usage
 
@@ -82,10 +49,9 @@ Use the Spec Writer flow for this feature. Do not generate implementation tasks 
 
 ## Claude Code usage
 
-The pack includes both a subagent and a skill/command wrapper:
+The pack includes a subagent and a command wrapper:
 
 - `.claude/agents/spec-writer.md`
-- `.claude/skills/spec-writer/SKILL.md`
 - `.claude/commands/spec-writer.md`
 
 Use one of:

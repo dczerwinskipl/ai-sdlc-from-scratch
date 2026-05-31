@@ -1,4 +1,4 @@
-<!-- Type: project-context -->
+<!-- Archetype: KNOWLEDGE -->
 
 # Booking System: Known Decisions
 

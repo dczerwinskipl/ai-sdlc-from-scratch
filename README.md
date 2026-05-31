@@ -47,6 +47,10 @@ chore: rename folder structure
 
 Full conventions: [`.ai/git.md`](.ai/git.md)
 
+## AI-Assisted Development
+
+Content and code in this repository were developed with AI assistance. All materials have been written, reviewed, and are authored by [Dominik Czerwiński](https://dczerwinski.pl), who retains full responsibility for the work.
+
 ## License
 
-MIT
+Apache 2.0 — see [LICENSE](LICENSE).

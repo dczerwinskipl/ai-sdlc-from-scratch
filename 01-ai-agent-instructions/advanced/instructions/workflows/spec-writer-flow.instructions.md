@@ -1,4 +1,4 @@
-<!-- Type: workflow -->
+<!-- Archetype: WORKFLOW -->
 
 # Spec Writer Flow
 
@@ -48,7 +48,7 @@ Minimum output:
 
 Before proceeding, classify open questions and assumptions.
 
-Follow `instructions/core/reasoning/open-questions-and-assumptions.instructions.md`.
+Follow `instructions/core/reasoning/analysis-standards.instructions.md`.
 
 Blocking open questions must be surfaced before domain discovery and model selection.
 
@@ -96,6 +96,7 @@ The Spec Writer must not:
 - ignore side effects only because the user did not mention them
 - copy all known context into the spec
 - expand scope without marking it as requirement impact or open question
+- describe module interfaces, contracts, or implementation approaches that depend on a model not yet selected
 
 Minimum output:
 - list of impacted existing behaviors or rules (with why each matters for this change)
@@ -118,11 +119,11 @@ Analyze:
 Use domain archetypes as discovery aids, not as mandatory implementation patterns.
 
 The Spec Writer must check for high-impact semantic ambiguity that may affect AC, domain model, or architecture.
-Follow `instructions/core/reasoning/high-impact-semantics.instructions.md`.
+Follow `instructions/core/reasoning/analysis-standards.instructions.md`.
 
 Minimum output:
 - list of affected domain concepts with initial lifecycle and ownership notes
-- any detected semantic ambiguities (classified per open-questions-and-assumptions)
+- any detected semantic ambiguities (classified per `instructions/core/reasoning/analysis-standards.instructions.md`)
 - any domain extraction candidates flagged for Step 6
 
 ## Step 5 — Early termination for local changes
@@ -172,17 +173,7 @@ If an architectural concern was flagged in Step 6, propose two or three solution
 
 Use the Minimal Change / Incremental Domain / Target Domain framing as defaults when it fits. Replace the names when it does not. Do not force a third model when only two trade-offs exist.
 
-Each model must include a model intent block explaining:
-
-- why this model was proposed
-- starting assumption: what belief about the future this model depends on being correct
-- what it optimizes for
-- what it protects
-- what it intentionally sacrifices
-- keeps open: what future directions remain possible if this model is chosen
-- makes harder: what future directions become more costly or locked out
-- when it is a good fit
-- when it is a bad fit
+Each model must include a model intent block — see the format in `instructions/workflows/solution-option-analysis.instructions.md`.
 
 Follow `instructions/workflows/solution-option-analysis.instructions.md` for full evaluation requirements.
 
@@ -254,8 +245,6 @@ Minimum output:
 
 ## Step 11 — Ask for simple confirmation
 
-After recommending a model, follow the confirmation procedure defined in `instructions/workflows/human-direction-confirmation.instructions.md`.
-
 Present:
 
 - recommended model and why
@@ -265,26 +254,17 @@ Present:
 - decisions that can be deferred
 - unresolved open questions that matter
 
-Ask:
-
-```
-Do you want me to use this direction for the final spec?
-
-1. Yes, use this model.
-2. No, revise the models.
-3. Analyze the options again with different priorities.
-4. I want to provide my own direction.
-```
+Then follow the confirmation procedure defined in `instructions/workflows/architecture-gate.instructions.md`.
 
 The Spec Writer must stop here when human approval is required.
 
 It must not generate final implementation tasks in the same response unless the direction has already been approved.
 
-For the full list of conditions that require human approval before proceeding, see `instructions/workflows/architecture-approval-gate.instructions.md`.
+For the full list of conditions that require human approval before proceeding, see `instructions/workflows/architecture-gate.instructions.md`.
 
 Minimum output:
 - presented summary of recommended model, scope, deferred items, and unresolved questions
-- confirmation prompt presented per `instructions/workflows/human-direction-confirmation.instructions.md`
+- confirmation prompt presented per `instructions/workflows/architecture-gate.instructions.md`
 
 ## Step 12 — Generate implementation plan only after approval
 
@@ -300,11 +280,10 @@ Allowed before approval:
 
 Allowed after approval:
 
-- implementation plan
+- `implementation-plan.md` — ordered implementation tasks, interface definitions, API paths, slice boundaries, test strategy
 - persistence changes
 - API or contract changes
 - test plan
-- implementation tasks
 
 When the final spec is generated, include a decision record:
 
@@ -316,6 +295,21 @@ When the final spec is generated, include a decision record:
 - accepted trade-offs: what the approved model deliberately sacrifices
 - deferred decisions: what was identified but intentionally left for a later iteration
 
+### Artifact boundary rules
+
+**`decision.md`** must not contain implementation-level API signatures, repository method names, endpoint paths, or task breakdowns. It may mention module names, domain concepts, integration contract names, and existing component names when needed to explain the architectural decision. Implementation specifics belong in `implementation-plan.md`.
+
+**`spec.md`** — the Existing System Impact section must describe the post-decision impact of the selected model only. Pre-decision model analysis belongs in `solution-options.md`. Do not carry pre-decision impact speculation, unselected model artifacts, or implementation interface predictions into `spec.md`.
+
+### Implementation pipeline guard
+
+Implementation must not start unless both conditions are true:
+
+1. `spec.md` has `status: approved` and `source-of-truth: true`
+2. `decision.md` is either not required (local change, no architectural impact) or has `status: approved` and `source-of-truth: true`
+
+If `spec.md` is `historical` or `source-of-truth: false`, implementation is blocked regardless of `decision.md` state.
+
 Minimum output (before approval):
 - list of safe preparatory tasks or explicit "blocked" status for implementation tasks
 - decision summary with pending confirmation noted
@@ -323,6 +317,35 @@ Minimum output (before approval):
 Minimum output (after approval):
 - complete implementation plan with all required tasks
 - decision record with all required fields
+
+## Spec artifact status markers
+
+Each generated spec artifact must include a YAML frontmatter block at the top of the file:
+
+```yaml
+---
+artifact: domain-discovery | solution-options | spec | decision | implementation-plan | test-plan
+status: draft | reviewed | approved | superseded | historical
+source-of-truth: true | false
+requires-approval: true | false
+approved-by: ~
+related-spec: docs/spec/<feature>/spec.md
+related-decision: docs/spec/<feature>/decision.md
+---
+```
+
+Status vocabulary:
+- `draft` — being written; not ready for review
+- `reviewed` — reviewed but not yet formally approved
+- `approved` — consistent and ready to act on; human direction confirmed
+- `superseded` — replaced by a later artifact in the same feature
+- `historical` — kept for reference; no longer current; must not be treated as source of truth
+
+An artifact with a known inconsistency must not be marked `approved`. Mark it `historical` with `source-of-truth: false` and create a corrected artifact if needed.
+
+For `solution-options.md`, always set `source-of-truth: false`. Option analysis is superseded by the decision record once a model is approved.
+
+For `test-plan.md` (when created), add `derived-from: docs/spec/<feature>/spec.md` and set `source-of-truth: false`. Test plans are derived from `spec.md`, not an independent source of truth.
 
 ## Expected output shape
 

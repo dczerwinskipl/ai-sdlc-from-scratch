@@ -1,4 +1,4 @@
-<!-- Type: workflow -->
+<!-- Archetype: WORKFLOW -->
 
 # Solution Option Analysis
 
@@ -92,8 +92,9 @@ For each model include:
 - acceptance criteria coverage
 - benefits
 - risks
-- implementation complexity (t-shirt size — see `instructions/core/estimation/tshirt-sizing.instructions.md`)
+- implementation complexity (t-shirt size — see Complexity Sizing section in this file)
 - domain risk
+- agent-introduced concerns: new coupling, circular dependencies, integration inversions, or architectural problems this model introduces that are not present in the current system (must be listed explicitly; a model that introduces circular module dependency or bidirectional coupling cannot be recommended without explicitly flagging this as High domain risk)
 - operational risk
 - migration impact
 - future maintenance impact
@@ -101,9 +102,28 @@ For each model include:
 
 Include fields that materially affect the decision. For small-scope changes (XS/S size), limit to AC coverage, benefits, risks, and implementation complexity. Skip fields that would be identical or empty for all models.
 
-## T-shirt sizing
+Agent-introduced concerns must always be listed explicitly regardless of scope size. Do not skip this field for XS/S changes.
 
-See `instructions/core/estimation/tshirt-sizing.instructions.md` for size definitions and guidance.
+## Complexity Sizing
+
+Use t-shirt sizing to represent relative implementation complexity across solution models.
+
+Size represents relative implementation complexity, architectural impact, uncertainty, and regression scope. It is not a time estimate.
+
+| Size | Meaning |
+|---|---|
+| XS | Trivial local change. No domain decision, persistence change, or contract change. |
+| S | Small local change inside one module. Known pattern, low uncertainty. |
+| M | Moderate feature or rule change. One main module, some persistence, contract, or test impact. |
+| L | Significant domain change. Affects lifecycle, aggregate boundaries, or multiple behaviors. |
+| XL | Architectural change. Multiple modules, ownership changes, new contracts, migration, broad regression scope. |
+| XXL | Too large for one implementation slice. Must be split before implementation. |
+
+Usage rules:
+- Assign a size to each solution model in option analysis.
+- If a model is XL or XXL, propose smaller implementation slices.
+- For small-scope changes (XS/S), simplify the evaluation — focus on AC coverage, benefits, risks, and complexity. Skip fields that would be identical or empty for all models.
+- Do not use size as a tie-breaker between models that have different domain risk profiles. A smaller model with higher domain risk is not automatically better.
 
 ## Trade-off dimensions
 
@@ -136,7 +156,7 @@ Relevant dimensions to consider when they matter:
 
 Before recommending a model, the Spec Writer must assess whether future direction could change the choice.
 
-Ask when relevant:
+Must ask when scope, future channels, business variants, or actors are not fixed:
 
 - Are similar future use cases expected that may affect the same concept from other processes, actors, or integration points?
 - Is this feature a one-off addition or the first step toward a more general capability?
@@ -149,18 +169,16 @@ Use concrete examples when helpful, but mark them as examples — do not hardcod
 
 ## Recommendation rule
 
-Recommend the simplest model that:
+Recommend the model that best satisfies, in order:
 
-- satisfies all confirmed acceptance criteria
-- does not violate known domain invariants
-- does not hide lifecycle differences
-- does not assign ownership to the wrong module
-- does not create unacceptable future maintenance risk
+1. All confirmed acceptance criteria
+2. User-stated priorities from direction questions
+3. Known domain invariants and architectural constraints
+4. Lowest implementation cost among models satisfying 1–3
 
-The recommendation must not be based only on the smallest size.
+Do not use cost as a tiebreaker against a stated priority.
 
-A model may be low effort but high domain risk.
-A model may be higher effort but lower long-term domain risk.
+If the model satisfying stated priorities is prohibitively costly, surface the conflict explicitly and ask for revised direction before recommending.
 
 The recommendation must document the decision basis explicitly.
 
