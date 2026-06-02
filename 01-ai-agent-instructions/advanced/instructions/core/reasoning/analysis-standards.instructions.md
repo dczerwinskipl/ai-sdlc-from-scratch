@@ -89,3 +89,31 @@ For each detected semantic ambiguity, decide whether it is:
 - an implementation detail (safe to decide during implementation)
 
 Do not silently assume high-impact semantics when they affect business behavior or model selection.
+
+---
+
+## Coupling Checklist
+
+For every change, before generating tasks, verify the following. This applies to all changes — including those that passed Step 5 early termination. A local change can still introduce coupling that makes future extraction significantly more expensive.
+
+**Structural coupling**
+
+- Does the change introduce a new dependency between two modules?
+  If yes: is it one-directional? A new bidirectional dependency is an architectural concern requiring explicit approval.
+- Does the change make a module implement another module's own interface?
+  If yes: this is a Module Boundary violation. Flag immediately.
+
+**Temporal coupling**
+
+- Does any new call require the callee to be available at the moment of the call?
+  If yes on a read path: can the data be owned locally instead, eliminating the runtime dependency?
+  If yes on a write path: is fail-closed behavior correct, or should the caller proceed on temporary callee unavailability?
+
+**Data coupling**
+
+- Does the change require a module to read or write another module's private schema directly?
+  If yes: this is a boundary violation regardless of implementation convenience.
+- Does the change pass more data than the callee needs?
+  If yes: narrow the interface to what the callee actually requires.
+
+When any check flags a concern, treat it as an architectural concern and do not proceed to implementation tasks without explicit approval.

@@ -2,19 +2,31 @@
 
 # Domain Archetypes
 
-Use archetypes as discovery aids, not as implementation instructions.
+This file is always loaded. Check it against every requirement — not only when an
+archetype name appears in the domain language. An archetype applies when its
+**description** matches the behavior of a concept in the requirement, regardless of
+what the domain calls that concept.
 
-The agent may use archetypes to ask better questions and detect missing concepts.
+Use archetypes as discovery aids, not as implementation instructions. An archetype
+match is a signal to ask better questions, not a prescription to apply a pattern.
 
 The agent must not force an archetype when requirements do not justify it.
+
+## How to apply
+
+For every concept in the requirements that has behavior (state changes, lifecycle,
+ownership, rules, or coordination), scan this catalogue and ask: does any archetype
+describe what this concept *does*, even if the domain uses a different name?
+
+If a match is found, apply the usage rules below before proposing anything structural.
 
 ## Usage rules
 
 For every proposed archetype, explain:
 
-- which requirement suggests this archetype
+- which requirement behavior (not name) suggests this archetype
 - which existing system behavior supports it
-- what problem it solves
+- what problem the archetype framing helps solve
 - what simpler model was considered
 - why the simpler model is or is not enough
 
@@ -27,6 +39,30 @@ Do not introduce an archetype only because:
 - the current code looks too simple
 
 If the archetype is only a future possibility, mark it as Potential future model, not as the recommended design.
+
+## Domain language signals
+
+Archetypes appear under different names in different domains. The name in the domain language does not have to match the archetype name — check the behavior, not the noun.
+
+| Archetype | Domain may call it |
+|:---|:---|
+| Party / Actor / Participant | user, account, employee, customer, contact, tenant, member, owner, payer, recipient |
+| Resource | asset, item, seat, slot, vehicle, room, machine, licence, capacity unit |
+| Reservation / Allocation | booking, appointment, claim, hold, assignment, enrollment, registration, permit, ticket, scheduled use |
+| Block / Hold | freeze, lock, suspension, restriction, embargo, ban, quarantine, exclusion, blackout |
+| Availability / Capacity | calendar, schedule, occupancy, utilization, headcount, slot count, open capacity |
+| Policy / Rule | configuration, setting, profile, preference, template, limit, threshold, ceiling, constraint |
+| Accounting | wallet, credit, ledger, points, tokens, balance, quota, entitlement, budget, allowance |
+| Pricing | fee, rate, charge, tariff, quote, estimate, cost, surcharge, discount |
+| Ordering | purchase, contract, commitment, confirmed booking (when binding with price snapshot) |
+| Catalogue / Reference Data | library, registry, directory, lookup, master data, reference list |
+| Plan / Execution / Delta | budget vs actuals, forecast vs reality, scheduled vs completed, expected vs delivered |
+| Notification / Communication | alert, message, email, reminder, digest, event receipt |
+| Workflow / Process | flow, pipeline, approval chain, onboarding, review cycle |
+
+When multiple signals appear together (e.g., "users book a slot, and slots can be blocked for maintenance"), check whether multiple archetypes are all present simultaneously — Reservation, Block/Hold, and Availability often appear as a group.
+
+---
 
 ## Common archetypes
 
@@ -81,20 +117,19 @@ Check:
 
 ### Availability / Capacity
 
-Availability is a derived, dynamic model — not a property stored on a resource.
-
-Availability is computed from the algebra of reservations, capacity limits, plans, and blocks at a point in time or over a time range.
+Represents whether and when a resource can be used. Availability is not a status field on the resource — it is the computed result of all current constraints, claims, and lifecycle state applied to that resource.
 
 Check:
 
-- what inputs determine availability (reservations, plans, blocks, capacity rules)
-- who owns each input
-- whether availability is computed on request or materialized
-- whether blocks can overlap and how overlaps are resolved
-- whether availability has a separate lifecycle from reservation and resource
-- whether different actors see different availability views based on permissions
+- who owns the definitive answer to "can this be used for this period / quantity / condition?"
+- what independent factors affect availability (claims, blocks, lifecycle status, capacity rules)
+- whether multiple independent sources can create conflicting claims on the same resource
+- whether mutual exclusion across claim sources must be enforced by one authority
+- whether availability state must survive temporary unavailability of claim sources
+- whether resource lifecycle state (active/inactive) affects availability separately from time-bounded claims
+- whether availability is calculated at query time or stored and maintained as events occur
 
-Do not model availability as a status field on the resource. A resource may be Active and still unavailable for a specific time range.
+Do not model availability as a status field on the resource. A resource may be active and still unavailable for a specific period or quantity.
 
 ### Block / Hold
 
@@ -242,3 +277,34 @@ Check:
 - whether actors need to approve, reject, or negotiate deltas
 
 Do not model plan vs execution as a boolean flag (e.g., `isCompleted`). A flag cannot represent partial completion, late delivery, over-delivery, or divergence trends over time.
+
+---
+
+## Common confusion pairs
+
+Use these when two archetypes seem to apply to the same concept.
+
+**Accounting vs Policy/Rule when a "limit" appears:**
+Tracking how much of a quota has been consumed = Accounting (a balance that changes with each use).
+Defining what the limit is = Policy/Rule (a rule that changes independently of usage).
+Both are often present together: a configurable limit (Policy) enforced against a tracked balance (Accounting).
+
+**Block/Hold vs Reservation when both claim a resource:**
+Reservation: initiated by an external actor, time-bounded, may expire, actor expects notification on cancellation.
+Block/Hold: initiated by the system or an admin, reason-driven, no expiry obligation, may overlap with reservations.
+Key question: who initiates it, and does that initiator expect to be notified if the claim is removed?
+
+**Catalogue/Reference Data vs Resource:**
+Resource: has its own lifecycle, can be claimed or blocked, has availability.
+Catalogue: provides descriptive data other domains reference but does not own operational state.
+Key question: can it be reserved, allocated, or blocked? Does it have availability state?
+
+**Ordering vs Reservation:**
+Reservation: claims availability for a future use; can expire; price is not committed.
+Ordering: binding commitment; price is snapshotted at order time; initiates an execution process.
+Key question: is the price locked? Does placing it trigger fulfilment?
+
+**Policy/Rule vs Workflow/Process when rules are conditional:**
+Policy/Rule: a declarative constraint that governs what is allowed. Evaluated at decision points.
+Workflow/Process: an active coordination sequence that advances through states and may trigger compensations.
+Key question: does it execute a sequence of steps, or does it define a constraint that others check?

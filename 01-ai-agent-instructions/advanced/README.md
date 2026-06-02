@@ -1,10 +1,24 @@
-# SDLC Spec Writer Pack
+# Advanced - Spec Writer Showcase
 
-This pack contains a reusable context-aware Spec Writer workflow.
+This folder is the `advanced/` variant from [Post 01 - AI Agent Instructions](../README.md).
 
-It is designed to work with both GitHub Copilot and Claude Code.
+It contains a Spec Writer workflow built on top of a booking system codebase. The setup is intentionally more complex than what you would write for a real project - the goal is to showcase different types of instructions, not to provide a production-ready template.
 
-## What it does
+---
+
+## Assumptions and design choices
+
+The instruction set was built with a specific set of constraints in mind:
+
+- **Multi-tool from the start** - the same instructions need to work with Claude Code, GitHub Copilot, and Codex/AGENTS-compatible hosts. That is why there is a manifest instead of each adapter maintaining its own list.
+- **Context cost matters** - not every feature needs full DDD analysis. Instructions are split into always-load and conditional sections. The manifest controls what gets loaded and when.
+- **Architecture changes are expensive to undo** - the agent can propose changes to module boundaries or aggregate ownership, but cannot approve them. A human must confirm before implementation tasks are generated.
+- **Decision levels are explicit** - the agent is taught to distinguish Requirement / Domain / Architecture / Implementation decisions, because collapsing them into implementation-level answers is a common failure mode.
+- **Known shortcuts are documented** - the booking system has intentional shortcuts from MVP. They are recorded with their reason and known limitations so the agent knows when they are relevant.
+
+---
+
+## What the Spec Writer does
 
 The Spec Writer turns collected knowledge, requirements, and draft acceptance criteria into a reviewable solution spec.
 
@@ -18,8 +32,10 @@ Its main job is to:
 - detect architectural concerns
 - propose two or three solution models when needed
 - compare models against acceptance criteria
-- recommend based on stated priorities, domain invariants, and cost — in that order
+- recommend based on stated priorities, domain invariants, and cost - in that order
 - ask for human direction confirmation before architecture changes are turned into implementation tasks
+
+---
 
 ## Structure
 
@@ -27,12 +43,14 @@ The instruction loading rules are maintained in a single canonical location: `in
 
 All tool adapters (`.claude/`, `.github/`, `AGENTS.md`) reference the manifest instead of maintaining their own lists.
 
+---
+
 ## Copilot usage
 
-The pack includes:
+The setup includes:
 
 - `.github/copilot-instructions.md`
-- `.github/instructions/spec-writer.instructions.md`
+- `.github/agents/spec-writer.agent.md`
 - `AGENTS.md`
 
 Use Copilot with prompts like:
@@ -49,7 +67,7 @@ Use the Spec Writer flow for this feature. Do not generate implementation tasks 
 
 ## Claude Code usage
 
-The pack includes a subagent and a command wrapper:
+The setup includes a subagent and a command wrapper:
 
 - `.claude/agents/spec-writer.md`
 - `.claude/commands/spec-writer.md`
@@ -70,20 +88,23 @@ or:
 /spec-writer Add maintenance mode for rooms based on current knowledge.
 ```
 
+---
+
 ## Important rule
 
 The Spec Writer may propose architecture changes, but must not approve them.
 
 Any change to module boundaries, bounded contexts, aggregate ownership, data ownership, integration contracts, public contracts, transaction boundaries, consistency model, or feature scope requires explicit human confirmation before implementation tasks are generated.
 
-## Project-specific part
+---
 
-The current project-specific example is:
+## Project-specific context
+
+The booking system context lives in:
 
 ```txt
 instructions/project/booking/domain-context.instructions.md
+instructions/project/booking/known-decisions.instructions.md
 ```
 
-Replace it or add another project folder when reusing this pack for a different domain.
-
-Keep generic DDD instructions separate from project-specific domain context.
+These are example files specific to this showcase. They are not generic templates.

@@ -18,9 +18,37 @@ First establish:
 
 If acceptance criteria are missing or too weak, create draft acceptance criteria from available knowledge and mark them as draft.
 
+## Infrastructure pattern recognition
+
+Before proposing solution models, check whether any flagged architectural concern involves a generic infrastructure pattern. Generic infrastructure concerns have established open-source solutions that must be evaluated before designing custom implementations.
+
+Infrastructure concerns include (not limited to):
+
+- Authentication and session management
+- OAuth / OIDC integration
+- Event bus and in-process message dispatch
+- Job scheduling and background processing
+- Caching and distributed state
+- API documentation and schema generation
+
+For each infrastructure concern in scope, list candidate options using this evaluation format:
+
+| Field | Content |
+|---|---|
+| Option | Library name and version line, or "Custom implementation" |
+| License | SPDX identifier + commercial terms if relevant (e.g., `Apache 2.0`, `MIT`, `commercial above X RPS`) |
+| Adoption cost | T-shirt size for integration effort in this codebase |
+| Enables | Capabilities unlocked (future scenarios, patterns, extraction readiness) |
+| Blocks | Patterns or decisions that become harder after adopting it |
+
+Always include "Custom implementation" as one candidate. Include library candidates in the model description when they materially reduce the complexity sizing (e.g., building from scratch = XL vs. using an established library = L).
+
+When a library introduces any architectural paradigm not yet in use in this system — meaning it changes how modules communicate, introduces new infrastructure components, or alters how state is managed or replicated — flag it explicitly:
+> This option introduces [paradigm name] — an approach not currently used in this system. Confirm it as an architecture decision (Step 9 direction question) before selecting this option.
+
 ## Required options
 
-Propose two or three models that represent meaningfully different trade-offs. Use the names below as defaults when they fit. Replace them with names that better reflect the actual trade-off being made. Do not force a third model when only two trade-offs exist.
+Propose at least two models that represent meaningfully different trade-offs. Propose three when three meaningfully different trade-offs exist. Propose more than three when additional architecturally distinct options apply — do not cap at three when more real alternatives exist. Each additional model must represent a distinct trade-off, not a variation on an existing model. Use the names below as defaults when they fit. Replace them with names that better reflect the actual trade-off being made. Do not force a third model when only two trade-offs exist.
 
 ### 1. Minimal Change Model
 
@@ -82,6 +110,58 @@ This model must not be recommended only because it looks architecturally pure.
 | Good fit when | Strategic feature, upcoming related use cases, long-term foundation needed |
 | Bad fit when | Scope is a one-off, cost is not justified, architectural purity drives the choice |
 
+### Advanced Model (optional, scope-dependent)
+
+An advanced model applies a paradigm shift — any architectural approach not currently
+in use in the system that fundamentally changes how state is managed, how modules
+communicate, or what infrastructure is required.
+
+**Include an advanced model when:**
+
+- The feature's domain characteristics make the paradigm a natural fit
+- Adopting the paradigm now prevents a known expensive migration later
+- The user's stated direction questions suggest future scenarios that the current model family cannot support cleanly
+
+**Do not include an advanced model when:**
+
+- The change is XS or S (local, no structural impact)
+- The paradigm would require infrastructure changes (new broker, new store, schema migration) that are not proportional to the feature scope
+- The paradigm is architecturally plausible but has no concrete advantage for the requirements at hand
+
+**Additional model intent fields for advanced models:**
+
+| Field | Content |
+|---|---|
+| Paradigm introduced | Name of the paradigm and what it changes about the current architecture |
+| Infrastructure cost | New infrastructure required (broker, store, tooling) and t-shirt size |
+| Lock-in risk | What becomes harder to undo if this paradigm is adopted |
+| Enables | Future capabilities that become easier or possible |
+
+Label advanced models clearly: `### Advanced Model — [Paradigm Name]`
+
+## Must not include
+
+Option analysis describes trade-offs, not implementation blueprints. Each model description must not include:
+
+- exact method signatures (e.g., `IServiceName.DoOperation(resourceId, period, claimId) → Result`)
+- interface definitions with parameter types (e.g., `Task<bool> IsAffectedBy(Guid resourceId, DateTimeOffset start, DateTimeOffset end, CancellationToken ct)`)
+- endpoint paths (e.g., `POST /api/resources/{resourceId}/operations`)
+- repository method names or rename operations (e.g., `TryAdd → Add`, `TryUpdate removed`)
+- handler names or application service call sequences
+- task breakdowns or implementation steps
+
+Use capability-level descriptions instead. State what a module must be able to do, not how it does it.
+
+Good:
+- `[ModuleName]` must provide a capability to register a claim on `[ResourceName]` for a given period, rejecting conflicts atomically.
+- `[ModuleName]` must be able to release a claim when the owning operation is cancelled.
+
+Avoid:
+- `IModuleNameService.RegisterClaim(resourceId, period, claimId, claimType) → Result`
+- `CancelHandler` calls `IModuleNameService.ReleaseClaim(claimId)`
+
+Exact method names and call sequences belong in `implementation-plan.md`, produced only after `decision.md` is approved.
+
 ## Evaluation fields
 
 For each model include:
@@ -103,6 +183,18 @@ For each model include:
 Include fields that materially affect the decision. For small-scope changes (XS/S size), limit to AC coverage, benefits, risks, and implementation complexity. Skip fields that would be identical or empty for all models.
 
 Agent-introduced concerns must always be listed explicitly regardless of scope size. Do not skip this field for XS/S changes.
+
+### Required checks for agent-introduced concerns
+
+When a model involves cross-module integration or a new module with multiple consumers, run these checks explicitly:
+
+**Single source of truth test:** Is there exactly one module that can answer the domain query (e.g., "what is the current state of this entity?", "can this actor perform this action?") without querying other modules at read time? If no — flag as High domain risk. Multiple modules owning overlapping state cannot enforce mutual exclusion and will produce inconsistent answers under concurrent access.
+
+**Module boundary test:** Does any module in this model implement another module's own interface and inject that implementation back into the defining module? If yes — flag as High domain risk. This creates bidirectional coupling at runtime even when interfaces appear unidirectional. The defining module can never be extracted without creating a circular network dependency. See `instructions/core/ddd/context-map.instructions.md` — Module Boundary Rule.
+
+**Module extraction test:** For each module in the proposed model, ask: if this module were deployed as a separate process, would replacing its public contracts with remote calls (HTTP/gRPC) create any circular call path? If yes — flag as High domain risk and identify which dependency direction must be reversed. Interface-level circularity is visible; service-level circularity from provider patterns is hidden and only becomes apparent at extraction.
+
+**Context map pattern selection:** For each new or changed cross-module dependency, identify which integration pattern applies and state the reason. Use `instructions/core/ddd/context-map.instructions.md`. Unstated integration patterns are a maintenance risk — the next person to modify the integration will not know what constraints were intended.
 
 ## Complexity Sizing
 
@@ -181,6 +273,24 @@ Do not use cost as a tiebreaker against a stated priority.
 If the model satisfying stated priorities is prohibitively costly, surface the conflict explicitly and ask for revised direction before recommending.
 
 The recommendation must document the decision basis explicitly.
+
+## Multi-step selection
+
+When option analysis produces models with multiple independent sub-decisions (paradigm choice, then implementation approach, then library selection), split the decision into sequential direction questions:
+
+1. **Paradigm question:** do you want to adopt [paradigm]?
+2. **Conditional on step 1:** which implementation approach? (e.g., in-process vs. broker-based; orchestrated vs. choreographed)
+3. **Conditional on step 2:** library selection with evaluation table
+
+Do not present step 2 or step 3 until the previous level is confirmed. Do not pre-select a complete stack and ask for one-shot confirmation.
+
+**Proportionality rule:** apply multi-step selection only when:
+
+- The feature is M or larger in complexity
+- The options contain at least one advanced model
+- The sub-decisions are genuinely independent (accepting one does not imply the other)
+
+For XS/S features, single-round confirmation is always sufficient. For M features without advanced models, single-round confirmation is preferred unless a library adoption decision is involved.
 
 ## Required human decision
 

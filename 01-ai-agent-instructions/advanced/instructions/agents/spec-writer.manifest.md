@@ -15,7 +15,9 @@ maintaining their own instruction lists.
 - `instructions/agents/spec-writer.agent.instructions.md`
 - `instructions/workflows/spec-writer-flow.instructions.md`
 - `instructions/workflows/architecture-gate.instructions.md`
+- `instructions/workflows/artifact-lifecycle.instructions.md`
 - `instructions/core/reasoning/analysis-standards.instructions.md`
+- `instructions/core/ddd/domain-archetypes.instructions.md`
 
 ## Always load (this project)
 
@@ -25,15 +27,26 @@ maintaining their own instruction lists.
 ## Load when starting Step 4 (Domain Discovery)
 
 - `instructions/core/ddd/domain-discovery.instructions.md`
-- `instructions/core/ddd/domain-archetypes.instructions.md`
 
 Load additionally when multiple candidate aggregates or lifecycle overlap is found:
 
-- `instructions/core/ddd/aggregate-lifecycle.instructions.md`
+- `instructions/core/ddd/aggregate-boundaries.instructions.md`
 
 ## Load when Step 6 (Detect architectural impact) confirms a concern exists
 
 - `instructions/workflows/solution-option-analysis.instructions.md`
+- `instructions/core/ddd/context-map.instructions.md`
+
+## Load when Step 14 requires c4.md generation
+
+Load only when Step 14 confirms the approved model changes module boundaries, bounded
+context boundaries, or cross-module contracts.
+
+- `instructions/core/ddd/c4-diagrams.instructions.md`
+
+## Load when starting Step 12 (Artifact Reconciliation Pass)
+
+- `instructions/workflows/artifact-reconciliation.instructions.md`
 
 ## Forbidden combinations
 
@@ -48,10 +61,12 @@ Load additionally when multiple candidate aggregates or lifecycle overlap is fou
 - `.github/copilot-instructions.md`
 - `.github/agents/spec-writer.agent.md`
 - `AGENTS.md`
+- `instructions/README.md`  (human documentation — not an instruction file)
 
 ## Files that are generated artifacts (do not treat as instructions)
 
 - `docs/spec/**/*.md`
 
 Artifact notes:
-- `implementation-plan.md` is a Phase 9 output. It is generated only after `decision.md` is approved. It is not a loaded instruction file.
+- `implementation-plan.md` is a Step 14 output. It is generated only after `decision.md` is approved, the reconciliation pass produces `CLEAR`, and the readiness check passes. It is not a loaded instruction file.
+- `reconciliation-report.md` is a Step 12 output. Writing it to disk is optional — it may be produced inline in the conversation only. It is not a loaded instruction file.

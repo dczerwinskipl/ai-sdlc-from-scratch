@@ -13,7 +13,7 @@ The agent may:
 - detect that a concept may deserve a separate module, bounded context, aggregate, or domain capability
 - propose extracting or splitting responsibilities
 - compare multiple solution models
-- recommend the simplest sufficient model
+- recommend the model that best satisfies confirmed AC, stated priorities, and domain constraints
 - document benefits, risks, trade-offs, and migration path
 - mark the recommendation as requiring human approval
 
@@ -79,6 +79,18 @@ The user may:
 
 If the user changes priorities or provides new information, update the analysis or recommendation before generating the final spec.
 
+## Post-approval required steps
+
+After option 1 is selected or the user provides their own direction (option 4):
+
+1. Run the artifact reconciliation pass (Step 12 of the workflow) before generating any post-decision artifacts. Follow `instructions/workflows/artifact-reconciliation.instructions.md`.
+2. The reconciliation pass must produce a visible report ending with `CLEAR` before `implementation-plan.md` generation begins.
+3. Run the implementation readiness check (Step 13 of the workflow) and produce a visible readiness declaration.
+
+`implementation-plan.md` generation is blocked until:
+- the reconciliation report shows `CLEAR`, and
+- the readiness declaration shows `Ready` or `Ready after minor clarification`
+
 ## Hard stop
 
 The agent must not generate final implementation tasks until one of:
@@ -87,6 +99,8 @@ The agent must not generate final implementation tasks until one of:
 - the user provides their own direction (option 4)
 
 Until confirmation is given, the implementation plan must be limited to safe, non-structural steps or explicitly marked as blocked.
+
+After confirmation is given, the reconciliation pass and readiness check must complete before implementation tasks are generated.
 
 ## Core rule
 

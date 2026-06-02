@@ -10,6 +10,16 @@ For intentional shortcuts, accepted trade-offs, and API stability decisions, see
 
 ---
 
+## Actors
+
+**Hotel Staff** — the single actor type in the current system. Performs all operations: creates and manages rooms, plans and manages room maintenance, creates and manages reservations on behalf of guests.
+
+No guest-facing interface exists. Guests do not interact with the system directly.
+
+No role-based access control exists. All operations are available to any hotel staff user.
+
+---
+
 ## Module: Reservations
 
 Owns reservation intent and reservation lifecycle.
