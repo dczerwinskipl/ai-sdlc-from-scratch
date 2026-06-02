@@ -1,4 +1,4 @@
-<!-- Archetype: RULES -->
+<!-- Archetype: GUARDRAIL -->
 
 # Architecture Approval Gate
 

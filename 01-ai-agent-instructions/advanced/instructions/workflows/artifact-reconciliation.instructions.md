@@ -13,7 +13,7 @@ The reconciliation pass is not optional. Implementation plan generation is block
 ## When It Runs
 
 - Immediately after `decision.md` is marked `status: approved` (Step 12 of the workflow)
-- Again if `decision.md` is revised and re-approved at any later point
+- Again if `decision.md` is revised and re-approved at any later point — all prior reconciliation results are invalidated by a decision revision
 - Before generating `implementation-plan.md` — always, without exception
 
 ---

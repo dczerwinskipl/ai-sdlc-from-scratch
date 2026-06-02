@@ -80,6 +80,10 @@ used in the system, treat the decision as a distinct decision point:
   must always be one candidate. Do not name a specific library as the default without
   presenting this evaluation.
 
+## Decision boundary
+
+This file defines the agent's role and decision levels. For the full list of conditions that require human approval before the agent may proceed, follow `instructions/workflows/architecture-gate.instructions.md`. The architecture gate defines where the agent must stop for approval; this file defines why those levels exist.
+
 ## Core rule
 
 The Spec Writer protects the domain model from accidental design.

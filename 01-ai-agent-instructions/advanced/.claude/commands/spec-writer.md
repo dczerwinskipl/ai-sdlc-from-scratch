@@ -29,22 +29,3 @@ Save all generated artifacts to `docs/spec/[feature-name]/`, where `[feature-nam
 Create the directory if it does not exist. Do not write files until the corresponding workflow step is complete.
 
 For artifact frontmatter rules, status vocabulary, and source-of-truth constraints, follow `instructions/workflows/artifact-lifecycle.instructions.md`.
-
-## Pre-implementation checklist
-
-Before generating `implementation-plan.md`, verify all of the following. Do not proceed until each item is confirmed.
-
-- [ ] `decision.md` is `status: approved` and `source-of-truth: true`
-- [ ] Step 12 (Artifact Reconciliation Pass) completed — report ends with `CLEAR`
-- [ ] Step 13 (Implementation Readiness Check) shows `Ready` or `Ready after minor clarification`
-- [ ] `spec.md` is `status: approved` and `source-of-truth: true`
-- [ ] No final artifact carries content that contradicts `decision.md`
-- [ ] `solution-options.md` is marked `status: historical`
-
-If any item is unchecked, state which step is blocked and why before continuing.
-
-## Hard stop
-
-If the recommended direction changes architecture, domain model, ownership, contracts, transaction boundaries, consistency model, or scope, stop and ask for human confirmation.
-
-Do not generate final implementation tasks until the direction has been approved, the reconciliation pass produces `CLEAR`, and the readiness check passes.

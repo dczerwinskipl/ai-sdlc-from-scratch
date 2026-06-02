@@ -17,7 +17,7 @@ maintaining their own instruction lists.
 - `instructions/workflows/architecture-gate.instructions.md`
 - `instructions/workflows/artifact-lifecycle.instructions.md`
 - `instructions/core/reasoning/analysis-standards.instructions.md`
-- `instructions/core/ddd/domain-archetypes.instructions.md`
+- `instructions/core/ddd/domain-archetype-index.instructions.md`
 
 ## Always load (this project)
 
@@ -27,6 +27,11 @@ maintaining their own instruction lists.
 ## Load when starting Step 4 (Domain Discovery)
 
 - `instructions/core/ddd/domain-discovery.instructions.md`
+
+Archetype group files are loaded dynamically by the agent during Step 4, following the
+instructions in `domain-archetype-index.instructions.md` (always loaded). The index
+identifies which groups are relevant and instructs the agent to load them in parallel.
+Do not pre-load all group files here.
 
 Load additionally when multiple candidate aggregates or lifecycle overlap is found:
 
@@ -65,7 +70,7 @@ context boundaries, or cross-module contracts.
 
 ## Files that are generated artifacts (do not treat as instructions)
 
-- `docs/spec/**/*.md`
+- `docs/**/*.md`
 
 Artifact notes:
 - `implementation-plan.md` is a Step 14 output. It is generated only after `decision.md` is approved, the reconciliation pass produces `CLEAR`, and the readiness check passes. It is not a loaded instruction file.

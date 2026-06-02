@@ -156,7 +156,7 @@ If any condition is uncertain, do not skip — continue with Steps 6–14.
 
 Minimum output:
 - explicit statement: option analysis skipped / option analysis proceeding
-- if skipped: documented reason why all three conditions are met
+- if skipped: documented reason why all three conditions are met; run the Coupling Checklist from `instructions/core/reasoning/analysis-standards.instructions.md` before producing the implementation-ready spec
 - if proceeding: which condition was uncertain and why
 
 ## Step 6 — Detect architectural impact
@@ -286,6 +286,7 @@ For the full list of conditions that require human approval before proceeding, s
 Minimum output:
 - presented summary of recommended model, scope, deferred items, and unresolved questions
 - confirmation prompt presented per `instructions/workflows/architecture-gate.instructions.md`
+- if any adjacent improvement candidate is accepted: record it as a confirmed scope addition, update the AC list, return to Step 1 for the added scope, and re-run Steps 2-5 for the new scope before continuing to Step 12
 
 ## Step 12 — Artifact Reconciliation Pass
 
@@ -403,6 +404,16 @@ Minimum output (after approval):
 - complete implementation plan with all required tasks
 - decision record with all required fields
 
+## Implementation Plan Approval
+
+After generating `implementation-plan.md`:
+
+1. Present a brief summary: slices, total complexity sizing, open implementation decisions.
+2. Ask the human to confirm: "Do you approve this implementation plan?"
+3. Transition `implementation-plan.md` to `status: approved` and set `approved-by` only on explicit confirmation.
+
+Until approval is given, `implementation-plan.md` remains `status: draft`. Do not begin implementation from a draft plan.
+
 ## Spec artifact status markers
 
 Every artifact written to `docs/spec/` must include a YAML frontmatter block.
@@ -416,6 +427,8 @@ Follow `instructions/workflows/artifact-lifecycle.instructions.md` for:
 - validation rules (contradictory frontmatter combinations)
 
 ## Expected conversation output shape
+
+Scale output sections to actual feature complexity. Not every feature requires all 13 sections at full depth. For simple features (Step 5 early exit or S complexity), sections 6-9 are omitted. Always produce sections 1, 2, 3, 4, and the final implementation plan or readiness declaration.
 
 1. Requirements and Acceptance Criteria
 2. Open Questions and Assumptions

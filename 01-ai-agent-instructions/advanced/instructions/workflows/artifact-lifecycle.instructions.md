@@ -1,4 +1,4 @@
-<!-- Archetype: RULES -->
+<!-- Archetype: CONTRACT -->
 
 # Artifact Lifecycle
 
@@ -50,6 +50,19 @@ An artifact file without frontmatter is non-compliant. Do not write a file to `d
 | Reference / Historical | `extraction-notes` | Always false | false |
 | Derived | `test-plan` | Always false | false |
 | Process output | `reconciliation-report` | Always false | false |
+
+---
+
+## Authority Hierarchy
+
+When two approved artifacts contradict each other, resolve the contradiction using this order:
+
+1. `decision.md` — wins against all other artifacts. If any final artifact contradicts `decision.md`, `decision.md` is authoritative.
+2. `spec.md` — wins against derived artifacts when approved and reconciled with `decision.md`.
+3. `context-map.md` and `c4.md` — authoritative only for integration view and diagram representation. Not authoritative for requirements or architecture decisions.
+4. `implementation-plan.md` — authoritative only for task breakdown and implementation-level detail. Not authoritative for architecture decisions (`decision.md`) or requirements (`spec.md`).
+
+If a contradiction cannot be resolved using this hierarchy, the agent MUST stop and report the contradiction instead of choosing one artifact silently.
 
 ---
 
@@ -142,6 +155,9 @@ Same rules as `context-map.md`.
 | `context-map.md` | `draft` → `approved` | Reconciliation pass confirms alignment with `decision.md` |
 | `c4.md` | `draft` → `approved` | Same as `context-map.md` |
 | `implementation-plan.md` | `draft` → `approved` | Human review after implementation readiness check passes |
+| Any final artifact | `approved` → `superseded` | Human decision to revise: create new version, mark prior version `superseded` with `source-of-truth: false`, run reconciliation pass against new version |
+
+**Revising an approved artifact:** To revise any approved artifact, create a corrected version as a new file (or update in place), mark the prior version `status: superseded` with `source-of-truth: false`, and run the artifact reconciliation pass before proceeding. Do not silently overwrite an approved artifact.
 
 ---
 

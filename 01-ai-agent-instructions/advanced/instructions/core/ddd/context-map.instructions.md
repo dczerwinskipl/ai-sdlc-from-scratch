@@ -1,8 +1,4 @@
 <!-- Archetype: RULES -->
-<!-- Why RULES: prescribes integration pattern selection methodology, module boundary
-     constraints, temporal coupling rules, and extraction-readiness design — all hard
-     constraints on agent behavior. The pattern catalogue is inlined because the
-     selection criteria are meaningless without it. -->
 
 # Context Map — Integration Patterns
 
@@ -172,7 +168,7 @@ A source module pushes state changes to a consumer's own store when those change
 
 **Use when:** A module must answer queries independently without calling other modules at query time. The module has high autonomy requirements (must be independently operable and extractable). Temporal coupling on the read path is not acceptable.
 
-**Example:** Room active/inactive status is pushed to Availability when a room is created or deactivated. Availability enforces room status from its own room catalogue. It never calls RoomManagement at reservation-check time. If RoomManagement is temporarily unavailable, Availability can still answer availability queries correctly.
+**Example:** A source module publishes entity lifecycle changes (such as active/inactive or enabled/disabled) to a consuming module at write time. The consuming module stores the received state in its own store and reads from that local copy at query time. If the source module is temporarily unavailable, the consumer can still answer queries correctly from its own state.
 
 **Key property:** The consuming module owns the pushed state. The source module no longer needs to be available for the consumer to operate correctly.
 
