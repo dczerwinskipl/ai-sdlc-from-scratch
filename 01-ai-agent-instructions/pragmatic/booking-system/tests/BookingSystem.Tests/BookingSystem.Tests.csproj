@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BookingSystem\BookingSystem.csproj" />
-  </ItemGroup>
+</ItemGroup>
 
 </Project>

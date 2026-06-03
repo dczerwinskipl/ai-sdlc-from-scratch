@@ -30,8 +30,6 @@ The name is intentional. Pragmatic here means: match the process to the problem,
 
 **Escalation chain** - each strategy re-checks its own entry conditions before producing output. A checklist strategy that surfaces hidden domain rules hands off to domain-spec mid-execution. Domain-spec hands off to cross-domain if ownership becomes unclear. Escalation is explicit and one-way.
 
-**Reviewer** - eight specialized sub-reviewers (architecture, security, performance, data integrity, test coverage, spec compliance, code quality, acceptance criteria) orchestrated by a single `/reviewer` command. The main reviewer selects which sub-reviewers to run based on the change type; each sub-reviewer writes its findings to a dedicated file under `.review/`.
-
 ---
 
 ## What the Spec Writer entry point does

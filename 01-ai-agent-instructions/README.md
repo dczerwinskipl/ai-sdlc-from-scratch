@@ -14,7 +14,7 @@ Open the inner folder (`vibe/`, `advanced/`, or `pragmatic/`) as the project roo
 
 ---
 
-## Vibe vs Advanced vs More Advanced
+## Vibe vs Advanced vs Pragmatic
 
 | | `vibe/` | `advanced/` | `pragmatic/` |
 |---|---|---|---|
@@ -24,7 +24,6 @@ Open the inner folder (`vibe/`, `advanced/`, or `pragmatic/`) as the project roo
 | **Workflow** | None — agent decides | Fixed 12-step pipeline | Dynamic — triage classifies, routes to LOW / MEDIUM / COMPLEX strategy |
 | **Context cost** | All at once | Manifest-driven, conditional | Strategy-driven — checklist only for LOW, DDD analysis for MEDIUM, full cross-domain discovery for COMPLEX |
 | **Architecture gate** | None | Explicit | Explicit |
-| **Reviewer** | None | None | 8 specialized sub-reviewers, orchestrated |
 | **Multi-tool** | Claude Code only | Claude Code + Copilot + Codex | Claude Code + Copilot + Codex |
 
 ### Vibe
@@ -58,7 +57,6 @@ Key additions over the advanced setup:
 - **Triage** - each request is evaluated against seven signals (ambiguity, source-of-truth, ownership, blast radius, reversibility, cross-domain impact, domain analysis). The result is a classification: LOW, MEDIUM, or COMPLEX.
 - **Strategy routing** - LOW routes to a checklist-only workflow; MEDIUM runs domain spec with DDD analysis; COMPLEX runs full cross-domain discovery before any spec is produced. The entry point is always the same command.
 - **Escalation chain** - each strategy re-checks its own entry conditions and escalates if assumptions fail. A checklist strategy that surfaces hidden domain rules hands off to the domain-spec strategy mid-execution.
-- **Reviewer** - eight specialized sub-reviewers (architecture, security, performance, data integrity, test coverage, spec compliance, code quality, acceptance criteria) orchestrated by a single `/reviewer` command.
 
 The cost is real: every request pays for triage before any output is produced. For a team where most requests are MEDIUM, the routing adds overhead with no routing benefit. It pays off when the variance in incoming requests is high enough that sending everything through the same heavy workflow would be wasteful.
 

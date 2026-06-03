@@ -1,6 +1,6 @@
 # Instructions - Architecture Notes
 
-This folder contains instruction sets for the `pragmatic/` variant: the three-level spec-writer routing system, the full cross-domain Spec Writer agent, and the reviewer orchestrator. The files are written for AI consumption - kept minimal and directive. This README is the human layer: it explains why each file exists and why it has its current shape.
+This folder contains instruction sets for the `pragmatic/` variant: the three-level spec-writer routing system and the full cross-domain Spec Writer agent. The files are written for AI consumption - kept minimal and directive. This README is the human layer: it explains why each file exists and why it has its current shape.
 
 ---
 
