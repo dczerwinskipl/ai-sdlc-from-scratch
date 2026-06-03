@@ -1,0 +1,2 @@
+# Exclude Claude Code specific files from Copilot indexing
+.claude/
