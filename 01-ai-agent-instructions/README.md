@@ -4,28 +4,27 @@ Source for the blog post at [dczerwinski.pl](https://dczerwinski.pl) <!-- TODO: 
 
 The question this post explores: what difference does it actually make to give an AI agent a well-structured set of instructions versus a basic context file with some project notes?
 
-Two variants are included - `vibe/` and `advanced/` - both targeting the same booking system codebase.
+Three variants are included - `vibe/`, `advanced/`, and `pragmatic/` - all targeting the same booking system codebase.
 
 ---
 
 ## How to test
 
-Open the inner folder (`vibe/` or `advanced/`) as the project root in Claude Code or VS Code - not this folder. Each variant has its own instruction set and agent configuration. Opening the parent folder mixes agents from different examples and defeats the point.
+Open the inner folder (`vibe/`, `advanced/`, or `pragmatic/`) as the project root in Claude Code or VS Code - not this folder. Each variant has its own instruction set and agent configuration. Opening the parent folder mixes agents from different examples and defeats the point.
 
 ---
 
-## Vibe vs Advanced
+## Vibe vs Advanced vs Pragmatic
 
-| | `vibe/` | `advanced/` |
-|---|---|---|
-| **Core file** | `CLAUDE.md` | `instructions/` tree + adapters |
-| **Setup cost** | Minutes | Hours |
-| **What the agent knows** | Commands, architecture, module layout, test conventions | Everything in vibe + DDD principles, decision levels, lazy-loaded domain context, known shortcuts |
-| **Workflow** | None - agent decides | Spec Writer pipeline (12 steps) |
-| **Architecture gate** | None | Explicit - agent cannot approve its own architectural proposals |
-| **Multi-tool** | Claude Code only | Claude Code + GitHub Copilot + Codex/AGENTS-compatible hosts |
-| **Instruction loading** | All at once | Manifest-driven, conditional - context cost paid only when needed |
-| **Maintenance** | Edit one file | Edit one manifest, files update across all tools |
+| | `vibe/` | `advanced/` | `pragmatic/` |
+|---|---|---|---|
+| **Core file** | `CLAUDE.md` | `instructions/` tree + adapters | `instructions/` tree + triage orchestrator |
+| **Setup cost** | Minutes | Hours | Days |
+| **Entry point** | Chat | `/spec-writer` | `/spec-writer` (facade) |
+| **Workflow** | None — agent decides | Fixed 12-step pipeline | Dynamic — triage classifies, routes to LOW / MEDIUM / COMPLEX strategy |
+| **Context cost** | All at once | Manifest-driven, conditional | Strategy-driven — checklist only for LOW, DDD analysis for MEDIUM, full cross-domain discovery for COMPLEX |
+| **Architecture gate** | None | Explicit | Explicit |
+| **Multi-tool** | Claude Code only | Claude Code + Copilot + Codex | Claude Code + Copilot + Codex |
 
 ### Vibe
 
@@ -49,32 +48,76 @@ Key additions over the vibe setup:
 
 The point is not that the advanced setup produces better output every time. For simple tasks it is slower and noisier. The point is that for tasks where the wrong architecture is expensive to undo, having the agent surface its uncertainty and require human confirmation is worth the overhead.
 
+### Pragmatic
+
+An orchestration layer on top of the advanced setup. The Spec Writer becomes a facade: it evaluates incoming requests against a set of signals, classifies the complexity, and routes to the appropriate internal strategy - without the user having to choose.
+
+Key additions over the advanced setup:
+
+- **Triage** - each request is evaluated against seven signals (ambiguity, source-of-truth, ownership, blast radius, reversibility, cross-domain impact, domain analysis). The result is a classification: LOW, MEDIUM, or COMPLEX.
+- **Strategy routing** - LOW routes to a checklist-only workflow; MEDIUM runs domain spec with DDD analysis; COMPLEX runs full cross-domain discovery before any spec is produced. The entry point is always the same command.
+- **Escalation chain** - each strategy re-checks its own entry conditions and escalates if assumptions fail. A checklist strategy that surfaces hidden domain rules hands off to the domain-spec strategy mid-execution.
+
+The cost is real: every request pays for triage before any output is produced. For a team where most requests are MEDIUM, the routing adds overhead with no routing benefit. It pays off when the variance in incoming requests is high enough that sending everything through the same heavy workflow would be wasteful.
+
 ---
 
 ## Example session artifacts
 
-The `docs/spec/room-maintenance/` folder inside each variant contains artifacts from a real session using the prompt below. You can browse them to see what structured instructions produce before running anything yourself.
+Pre-generated artifacts from real sessions. Browse them before running anything yourself.
 
-The session used the provided prompt, then continued with deliberate clarification rounds. Specifically: after the model produced its solution proposal, the domain discovery output was reviewed and the model's assumptions about maintenance status were found to be incomplete — cancellation handling and the status lifecycle were missing from the original spec. That correction was fed back after the proposal, not before. This is intentional: a structured spec makes gaps visible at the point where they are cheapest to fix, before any implementation tasks are generated.
+### Room maintenance - COMPLEX
 
-### Example session stats (advanced variant, no token optimization)
+Available in: `vibe/`, `advanced/`, `pragmatic/`
 
-| Metric | Value |
-|--------|-------|
-| Total cost | ~$2.69 |
-| Spec output | 1,463 lines across 6 artifacts |
-| claude-sonnet-4-6 | 1.1k input / 82.1k output / 2.2m cache read / 212k cache write |
-| claude-haiku-4-5 | 492 input / 15 output (subagent tasks) |
+The domain discovery step surfaced a gap in the original requirements: cancellation handling and the status lifecycle were missing. That correction was fed back after the proposal, not before — showing how structured spec work makes gaps visible at the point where they are cheapest to fix.
 
-This is a showcase session. The outputs are intentionally rich — the goal was to demonstrate what structured instructions can produce, not to minimize cost or token usage. In a real project you would optimize: fewer output tokens, more targeted documents, generating only what you actually need. That tradeoff is the subject of the next post.
+In `pragmatic/`, the triage classifies this as COMPLEX and runs the cross-domain discovery strategy.
+
+| Artifact | vibe | advanced | pragmatic |
+|---|---|---|---|
+| Domain discovery | - | [domain-discovery.md](advanced/docs/spec/room-maintenance/domain-discovery.md) | [domain-discovery.md](pragmatic/docs/spec/room-maintenance/domain-discovery.md) |
+| Solution options | - | [solution-options.md](advanced/docs/spec/room-maintenance/solution-options.md) | [solution-options.md](pragmatic/docs/spec/room-maintenance/solution-options.md) |
+| Decision | - | [decision.md](advanced/docs/spec/room-maintenance/decision.md) | [decision.md](pragmatic/docs/spec/room-maintenance/decision.md) |
+| Spec | [spec.md](vibe/booking-system/docs/spec/room-maintenance/spec.md) | [spec.md](advanced/docs/spec/room-maintenance/spec.md) | [spec.md](pragmatic/docs/spec/room-maintenance/spec.md) |
+| Implementation plan | - | [implementation-plan.md](advanced/docs/spec/room-maintenance/implementation-plan.md) | [implementation-plan.md](pragmatic/docs/spec/room-maintenance/implementation-plan.md) |
+
+### Reservation confirmation - MEDIUM
+
+Available in: `pragmatic/` only
+
+Changes the conflict detection rule so only Confirmed reservations block new ones, and adds cascade cancellation on confirmation. The change is fully contained within the `Reservations` module — no cross-domain discovery needed.
+
+| Artifact | pragmatic |
+|---|---|
+| Spec | [spec.md](pragmatic/docs/spec/reservation-confirmation/spec.md) |
+| Implementation plan | [implementation-plan.md](pragmatic/docs/spec/reservation-confirmation/implementation-plan.md) |
+
+### Room photo - LOW
+
+Available in: `pragmatic/` only
+
+Adds a base64-encoded JPG field to `Room` with format, size, and resolution validation. Business meaning is clear, source-of-truth is a single entity, no new business logic introduced. The checklist strategy produces seven implementation steps and seven tests — no domain discovery, no solution options, no architecture gate.
+
+| Artifact | pragmatic |
+|---|---|
+| Checklist | [checklist.md](pragmatic/docs/spec/room-photo/checklist.md) |
 
 ---
 
-## Example prompt for testing
+**Is the orchestration always worth it?**
 
-Both variants contain expected output artifacts for the room maintenance feature in `docs/spec/room-maintenance/`. Before running the prompt below, either delete those files or ask for a different feature entirely.
+The room-photo checklist could have been written by a developer in five minutes without any agent. The reservation-confirmation spec required understanding the existing status lifecycle — the triage at least prevented the agent from jumping into implementation and missing the cascade behavior.
 
-The prompt is the same regardless of which variant or tool you use - the difference is only in how you invoke it.
+The setup in `pragmatic/` makes sense when the complexity distribution of incoming requests is genuinely varied. When most requests fall in the same band, the classification step produces no real routing decision — it is overhead without benefit. That tradeoff is worth testing before committing to this level of structure.
+
+---
+
+## Example prompts for testing
+
+Each variant contains expected output artifacts for the examples above. Before running a prompt, either delete those files or ask for a different feature entirely.
+
+### Room maintenance (COMPLEX)
 
 ```
 I want to add maintenance mode for rooms.
@@ -93,11 +136,47 @@ Please analyze this against the current system and prepare a solution spec.
 Do not generate implementation tasks until the direction is approved.
 ```
 
+### Reservation confirmation (MEDIUM)
+
+```
+Change how reservation conflict detection works. Right now any active reservation
+blocks new ones for the same room and period. I want only Confirmed reservations
+to block new bookings. Pending reservations should not prevent other guests from
+booking the same room and period.
+
+When a reservation is confirmed, check for conflicts with existing Confirmed
+reservations and fail if one is found. Also automatically cancel all other
+Pending reservations for the same room that overlap with the confirmed period.
+
+Please analyze and prepare a solution spec.
+```
+
+### Room photo (LOW)
+
+```
+Add a photo to Room. Store it as a base64 JPG string. Validate on upload:
+JPEG format only, max 1024x768 resolution, max 2MB. Return the photo when
+fetching room details.
+```
+
 ### Invocation by tool and variant
 
-| Tool | `vibe/` | `advanced/` |
-|---|---|---|
-| **Claude Code** | Paste the prompt directly in chat | Use `/spec-writer` command |
-| **GitHub Copilot** | - | Select the `spec-writer` agent, then paste the prompt |
+| Tool | `vibe/` | `advanced/` | `pragmatic/` |
+|---|---|---|---|
+| **Claude Code** | Paste the prompt directly in chat | Use `/spec-writer` command | Use `/spec-writer` command |
+| **GitHub Copilot** | - | Select the `spec-writer` agent, then paste the prompt | Select the `spec-writer` agent, then paste the prompt |
 
-The vibe setup has no command or agent - you just talk to the model. Comparing the two outputs on the same prompt is the point of the exercise.
+The vibe setup has no command or agent - you just talk to the model. In `pragmatic/`, all three prompts go through the same `/spec-writer` entry point - the triage decides which strategy runs.
+
+---
+
+## Example session stats (advanced variant, no token optimization)
+
+| Metric | Value |
+|--------|-------|
+| Total cost | ~$2.69 |
+| Spec output | 1,463 lines across 6 artifacts |
+| claude-sonnet-4-6 | 1.1k input / 82.1k output / 2.2m cache read / 212k cache write |
+| claude-haiku-4-5 | 492 input / 15 output (subagent tasks) |
+
+This is a showcase session. The outputs are intentionally rich — the goal was to demonstrate what structured instructions can produce, not to minimize cost or token usage. In a real project you would optimize: fewer output tokens, more targeted documents, generating only what you actually need. That tradeoff is the subject of the next post.
