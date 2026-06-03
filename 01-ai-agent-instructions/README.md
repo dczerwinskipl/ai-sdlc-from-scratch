@@ -48,7 +48,7 @@ Key additions over the vibe setup:
 
 The point is not that the advanced setup produces better output every time. For simple tasks it is slower and noisier. The point is that for tasks where the wrong architecture is expensive to undo, having the agent surface its uncertainty and require human confirmation is worth the overhead.
 
-### More Advanced
+### Pragmatic
 
 An orchestration layer on top of the advanced setup. The Spec Writer becomes a facade: it evaluates incoming requests against a set of signals, classifies the complexity, and routes to the appropriate internal strategy - without the user having to choose.
 
@@ -64,25 +64,44 @@ The cost is real: every request pays for triage before any output is produced. F
 
 ## Example session artifacts
 
-Each variant contains pre-generated artifacts from real sessions. You can browse them before running anything yourself.
+Pre-generated artifacts from real sessions. Browse them before running anything yourself.
 
 ### Room maintenance - COMPLEX
 
-The `docs/spec/room-maintenance/` folder inside each variant. Used the room-maintenance prompt below. The domain discovery step surfaced a gap in the original requirements: cancellation handling and the status lifecycle were missing. That correction was fed back after the proposal, not before — showing how structured spec work makes gaps visible at the point where they are cheapest to fix.
+Available in: `vibe/`, `advanced/`, `pragmatic/`
+
+The domain discovery step surfaced a gap in the original requirements: cancellation handling and the status lifecycle were missing. That correction was fed back after the proposal, not before — showing how structured spec work makes gaps visible at the point where they are cheapest to fix.
 
 In `pragmatic/`, the triage classifies this as COMPLEX and runs the cross-domain discovery strategy.
 
+| Artifact | vibe | advanced | pragmatic |
+|---|---|---|---|
+| Domain discovery | - | [domain-discovery.md](advanced/docs/spec/room-maintenance/domain-discovery.md) | [domain-discovery.md](pragmatic/docs/spec/room-maintenance/domain-discovery.md) |
+| Solution options | - | [solution-options.md](advanced/docs/spec/room-maintenance/solution-options.md) | [solution-options.md](pragmatic/docs/spec/room-maintenance/solution-options.md) |
+| Decision | - | [decision.md](advanced/docs/spec/room-maintenance/decision.md) | [decision.md](pragmatic/docs/spec/room-maintenance/decision.md) |
+| Spec | [spec.md](vibe/booking-system/docs/spec/room-maintenance/spec.md) | [spec.md](advanced/docs/spec/room-maintenance/spec.md) | [spec.md](pragmatic/docs/spec/room-maintenance/spec.md) |
+| Implementation plan | - | [implementation-plan.md](advanced/docs/spec/room-maintenance/implementation-plan.md) | [implementation-plan.md](pragmatic/docs/spec/room-maintenance/implementation-plan.md) |
+
 ### Reservation confirmation - MEDIUM
 
-The `docs/spec/reservation-confirmation/` folder inside `pragmatic/`. Changes the conflict detection rule so only Confirmed reservations block new ones, and adds cascade cancellation on confirmation.
+Available in: `pragmatic/` only
 
-In `pragmatic/`, the triage classifies this as MEDIUM: existing business rules must be analyzed (status lifecycle, conflict detection logic, cascade behavior), but the change is fully contained within the `Reservations` module. The domain-spec strategy runs; no cross-domain discovery is needed.
+Changes the conflict detection rule so only Confirmed reservations block new ones, and adds cascade cancellation on confirmation. The change is fully contained within the `Reservations` module — no cross-domain discovery needed.
+
+| Artifact | pragmatic |
+|---|---|
+| Spec | [spec.md](pragmatic/docs/spec/reservation-confirmation/spec.md) |
+| Implementation plan | [implementation-plan.md](pragmatic/docs/spec/reservation-confirmation/implementation-plan.md) |
 
 ### Room photo - LOW
 
-The `docs/spec/room-photo/` folder inside `pragmatic/`. Adds a base64-encoded JPG field to `Room` with format, size, and resolution validation.
+Available in: `pragmatic/` only
 
-In `pragmatic/`, the triage classifies this as LOW: business meaning is clear, source-of-truth is a single entity, no new business logic is introduced. The checklist strategy produces seven implementation steps and seven tests. No domain discovery, no solution options, no architecture gate.
+Adds a base64-encoded JPG field to `Room` with format, size, and resolution validation. Business meaning is clear, source-of-truth is a single entity, no new business logic introduced. The checklist strategy produces seven implementation steps and seven tests — no domain discovery, no solution options, no architecture gate.
+
+| Artifact | pragmatic |
+|---|---|
+| Checklist | [checklist.md](pragmatic/docs/spec/room-photo/checklist.md) |
 
 ---
 
